@@ -8,6 +8,7 @@ import { CalendarScreen } from "./src/pages/CalendarScreen";
 import { LoginScreen } from "./src/pages/session/LoginScreen";
 import { SessionScreen } from "./src/pages/session/SessionScreen";
 import { RegisterScreen } from "./src/pages/session/RegisterScreen";
+import { CheckInfoScreen } from "./src/pages/check/CheckInfoScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -20,6 +21,8 @@ export type RootStackParamList = {
   LoginScreen: undefined;
   RegisterScreen: undefined;
   SessionScreen: undefined;
+
+  CheckInfoScreen: undefined;
 };
 
 export const App = (): ReactElement => {
@@ -43,6 +46,8 @@ export const App = (): ReactElement => {
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
       <Stack.Screen name="SessionScreen" component={SessionScreen} />
+
+      <Stack.Screen name="CheckInfoScreen" component={CheckInfoScreen} />
     </Stack.Navigator>
   );
 };
