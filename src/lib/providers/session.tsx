@@ -5,18 +5,19 @@ import { supabase } from "../db/supabase";
 
 export type SessionContextType = {
   logout: () => Promise<void>;
-  session: Session | false;
+  session: Session | null;
+  hasSession: boolean;
 };
 
 export const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export const SessionProvider = ({ children }: PropsWithChildren): ReactElement => {
-  const [session, setSession] = useState<Session | false>(false);
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Session event", event, session);
-      setSession(session || false);
+      setSession(session || null);
     });
 
     return (): void => {
@@ -32,7 +33,8 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
   return (
     <SessionContext.Provider value={{
       logout,
-      session
+      session,
+      hasSession: session !== null
     }}>
       {children}
     </SessionContext.Provider>
