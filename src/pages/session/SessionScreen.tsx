@@ -22,9 +22,9 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
   const handleEdit = async(): Promise<void> => {
     setEditLoading(true);
     const { error } = await supabase.auth.updateUser({ data: { firstName, lastName } });
-    const { error: error2 } = await supabase.from("users").update({ firstName, lastName }).eq("userId", session?.user.id);
+    const { error: error2 } = await supabase.from("users").update({ firstName, lastName }).eq("userId", session?.user.id || "");
     setEditLoading(false);
-    if (error || error2) console.error("Error:", error?.message, error2?.message);
+    if (error || error2) console.error("Error (handleEdit in SessionScreen.tsx l27):", error, error2);
   };
 
   return (
@@ -61,7 +61,7 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
           onPress={() => {
             handleEdit()
               .then(() => console.log("User profile updated"))
-              .catch((error) => console.error("Error:", error));
+              .catch((error) => console.error("Error (handleEdit in SessionScreen.tsx l64):", error));
           }}
         >
           Mettre à jour
@@ -78,7 +78,7 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
             onPress={() => {
               logout()
                 .then(() => console.log("Logout successful"))
-                .catch((error) => console.error("Error:", error));
+                .catch((error) => console.error("ErrorI:", error));
             }}
           />
         </Portal>
