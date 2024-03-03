@@ -12,8 +12,8 @@ export const calculateHours = (start: Date, end: Date): number => {
 };
 
 export const majdate = (date?: Date | string): string => {
-  if (!date) return dayJS().format("dddd DD MMMM YYYY").replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
-  return dayJS(date).format("dddd DD MMMM YYYY").replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+  if (!date) return dayJS().format("dddd DD MMMM YYYY").replace(/(^\w{1})/g, letter => letter.toUpperCase());
+  return dayJS(date).format("dddd DD MMMM YYYY").replace(/(^\w{1})/g, letter => letter.toUpperCase());
 };
 
 export const mjday = (date?: Date | string): string => {
