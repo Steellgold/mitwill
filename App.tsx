@@ -1,118 +1,52 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React from "react";
+import type { ReactElement } from "react";
+import { AppBar } from "./src/lib/components/appbar";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { HomeScreen } from "./src/pages/HomeScreen";
+import { CounterScreen } from "./src/pages/CounterScreen";
+import { CalendarScreen } from "./src/pages/CalendarScreen";
+import { useSession } from "./src/lib/hooks/useSession";
+import { LoginScreen } from "./src/pages/session/LoginScreen";
+import { SessionScreen } from "./src/pages/session/SessionScreen";
+import { RegisterScreen } from "./src/pages/session/RegisterScreen";
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+export type RootStackParamList = {
+  HomeScreen: undefined;
+  CounterScreen: undefined;
+  CalendarScreen: undefined;
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  // Session screens
+  LoginScreen: undefined;
+  RegisterScreen: undefined;
+  SessionScreen: undefined;
+};
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+export const App = (): ReactElement => {
+  const session = useSession();
+  console.log("Session", session);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <Stack.Navigator
+      screenOptions={{
+        contentStyle: {
+          backgroundColor: "#fffbfe"
+        },
+        animation: "none",
+        // @ts-ignore
+        header: (props) => <AppBar {...props} />
+      }}
+    >
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="CounterScreen" component={CounterScreen} />
+      <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
+
+      {/* Session screens */}
+      <Stack.Screen name="LoginScreen" component={LoginScreen} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+      <Stack.Screen name="SessionScreen" component={SessionScreen} />
+
+    </Stack.Navigator>
   );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;
+};
