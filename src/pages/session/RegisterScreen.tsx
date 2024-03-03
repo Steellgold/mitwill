@@ -12,7 +12,7 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
   const { session } = useSession();
   if (session) {
     navigation.popToTop();
-    navigation.navigate("SessionScreen");
+    navigation.navigate("HomeScreen");
   }
 
   const [firstName, setFirstName] = useState("");
@@ -29,14 +29,14 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
     if (error) {
       setError(error.message);
       setLoading(false);
-      console.log("Error:", error.message);
+      console.log("Error (handleRegister in RegisterScreen.tsx l32):", error.message);
     } else {
       setLoading(true);
-      const { error } = await supabase.from("users").upsert({ userId: session?.user?.id, firstName, lastName });
+      const { error } = await supabase.from("users").upsert({ userId: session?.user?.id || "", firstName, lastName });
       if (error) {
         setError(error.message);
         setLoading(false);
-        console.log("Error:", error.message);
+        console.log("Error (handleRegister in RegisterScreen.tsx l39):", error.message);
       }
 
       setLoading(false);
@@ -104,7 +104,7 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
 
           if (!loading) handleRegister()
             .then(() => console.log("Registered"))
-            .catch((error) => console.error("Error:", error));
+            .catch((error) => console.error("Error (handleRegister in RegisterScreen.tsx l107):", error));
         }} style={{ marginTop: 10 }}>
         Inscription à l'application
       </Button>
