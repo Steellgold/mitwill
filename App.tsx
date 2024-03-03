@@ -5,7 +5,6 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "./src/pages/HomeScreen";
 import { CounterScreen } from "./src/pages/CounterScreen";
 import { CalendarScreen } from "./src/pages/CalendarScreen";
-import { useSession } from "./src/lib/hooks/useSession";
 import { LoginScreen } from "./src/pages/session/LoginScreen";
 import { SessionScreen } from "./src/pages/session/SessionScreen";
 import { RegisterScreen } from "./src/pages/session/RegisterScreen";
@@ -24,11 +23,9 @@ export type RootStackParamList = {
 };
 
 export const App = (): ReactElement => {
-  const session = useSession();
-  console.log("Session", session);
-
   return (
     <Stack.Navigator
+      initialRouteName="HomeScreen"
       screenOptions={{
         contentStyle: {
           backgroundColor: "#fffbfe"
@@ -46,7 +43,6 @@ export const App = (): ReactElement => {
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
       <Stack.Screen name="SessionScreen" component={SessionScreen} />
-
     </Stack.Navigator>
   );
 };
