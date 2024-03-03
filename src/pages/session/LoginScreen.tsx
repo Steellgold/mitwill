@@ -12,7 +12,7 @@ export const LoginScreen = ({ navigation }: Props): ReactElement => {
   const { session } = useSession();
   if (session) {
     navigation.popToTop();
-    navigation.navigate("SessionScreen");
+    navigation.navigate("HomeScreen");
   }
 
   const [email, setEmail] = useState("");
@@ -27,7 +27,7 @@ export const LoginScreen = ({ navigation }: Props): ReactElement => {
     if (error) {
       setError(error.message);
       setLoading(false);
-      console.error("Error:", error.message);
+      console.error("Error:C", error.message);
     } else {
       setLoading(false);
       setError("");
