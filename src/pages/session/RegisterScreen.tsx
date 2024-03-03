@@ -10,8 +10,10 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 
 export const RegisterScreen = ({ navigation }: Props): ReactElement => {
   const { session } = useSession();
-  if (session) navigation.navigate("SessionScreen");
-
+  if (session) {
+    navigation.popToTop();
+    navigation.navigate("SessionScreen");
+  }
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -107,7 +109,7 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
         Inscription à l'application
       </Button>
       <Text style={{ marginTop: 5, alignSelf: "center" }}>Tu as déjà un compte ?
-        <Text style={{ color: "#fd7e46" }} onPress={() => navigation.navigate("LoginScreen")}>{" "}Connecte-toi</Text>
+        <Text style={{ color: "#fd7e46" }} onPress={() => navigation.push("LoginScreen")}>{" "}Connecte-toi</Text>
       </Text>
     </View>
   );
