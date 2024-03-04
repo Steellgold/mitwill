@@ -32,7 +32,7 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
       console.log("Error (handleRegister in RegisterScreen.tsx l32):", error.message);
     } else {
       setLoading(true);
-      const { error } = await supabase.from("users").upsert({ userId: session?.user?.id || "", firstName, lastName });
+      const { error } = await supabase.from("users").upsert({ userId: session?.user?.id || "", firstName, lastName, email });
       if (error) {
         setError(error.message);
         setLoading(false);
