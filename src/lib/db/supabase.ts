@@ -3,6 +3,7 @@ import "react-native-url-polyfill/auto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./supabase.types";
+import { AppState } from "react-native";
 
 const SUPABASE_URL = "https://xjgmgvvxdtpgkymqpvnz.supabase.co";
 // eslint-disable-next-line max-len
@@ -14,5 +15,17 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false
+  }
+});
+
+AppState.addEventListener("change", (state) => {
+  if (state === "active") {
+    supabase.auth.startAutoRefresh()
+      .then(() => console.log("Auto refresh started"))
+      .catch((error) => console.error("Error (supabase.ts l25):", error));
+  } else {
+    supabase.auth.stopAutoRefresh()
+      .then(() => console.log("Auto refresh stopped"))
+      .catch((error) => console.error("Error (supabase.ts l29):", error));
   }
 });
