@@ -22,7 +22,12 @@ export type RootStackParamList = {
   RegisterScreen: undefined;
   SessionScreen: undefined;
 
-  CheckInfoScreen: undefined;
+  CheckInfoScreen: {
+    date: string;
+    start: string;
+    end: string;
+    userId: string;
+  };
 };
 
 export const App = (): ReactElement => {
