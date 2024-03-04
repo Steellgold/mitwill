@@ -11,83 +11,133 @@ export type Database = {
     Tables: {
       checks: {
         Row: {
-          date: string;
-          end: string | null;
-          start: string;
-          userId: string;
-          uuid: string;
-        };
+          date: string
+          end: string | null
+          start: string
+          userId: string
+          uuid: string
+        }
         Insert: {
-          date: string;
-          end?: string | null;
-          start?: string;
-          userId: string;
-          uuid?: string;
-        };
+          date: string
+          end?: string | null
+          start?: string
+          userId: string
+          uuid?: string
+        }
         Update: {
-          date?: string;
-          end?: string | null;
-          start?: string;
-          userId?: string;
-          uuid?: string;
-        };
+          date?: string
+          end?: string | null
+          start?: string
+          userId?: string
+          uuid?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "public_checks_userId_fkey";
-            columns: ["userId"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
+            foreignKeyName: "public_checks_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
           }
-        ];
-      };
+        ]
+      }
       users: {
         Row: {
-          firstName: string | null;
-          lastName: string | null;
-          role: Database["public"]["Enums"]["Role"];
-          status: Database["public"]["Enums"]["Status"];
-          userId: string;
-        };
+          active: string | null
+          approvedAt: string | null
+          createdAt: string
+          declinedAt: string | null
+          declinedFor: string | null
+          email: string
+          firstName: string | null
+          lastName: string | null
+          role: Database["public"]["Enums"]["Role"]
+          status: Database["public"]["Enums"]["Status"]
+          updatedAt: string
+          userId: string
+        }
         Insert: {
-          firstName?: string | null;
-          lastName?: string | null;
-          role?: Database["public"]["Enums"]["Role"];
-          status?: Database["public"]["Enums"]["Status"];
-          userId: string;
-        };
+          active?: string | null
+          approvedAt?: string | null
+          createdAt?: string
+          declinedAt?: string | null
+          declinedFor?: string | null
+          email: string
+          firstName?: string | null
+          lastName?: string | null
+          role?: Database["public"]["Enums"]["Role"]
+          status?: Database["public"]["Enums"]["Status"]
+          updatedAt?: string
+          userId: string
+        }
         Update: {
-          firstName?: string | null;
-          lastName?: string | null;
-          role?: Database["public"]["Enums"]["Role"];
-          status?: Database["public"]["Enums"]["Status"];
-          userId?: string;
-        };
+          active?: string | null
+          approvedAt?: string | null
+          createdAt?: string
+          declinedAt?: string | null
+          declinedFor?: string | null
+          email?: string
+          firstName?: string | null
+          lastName?: string | null
+          role?: Database["public"]["Enums"]["Role"]
+          status?: Database["public"]["Enums"]["Status"]
+          updatedAt?: string
+          userId?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "public_users_userId_fkey";
-            columns: ["userId"];
-            isOneToOne: true;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
+            foreignKeyName: "public_users_active_fkey"
+            columns: ["active"]
+            isOneToOne: false
+            referencedRelation: "checks"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "public_users_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
           }
-        ];
-      };
-    };
+        ]
+      }
+    }
     Views: {
       [_ in never]: never
-    };
+    }
     Functions: {
-      [_ in never]: never
-    };
+      approve_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: undefined
+      }
+      count_users_waiting: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      decline_user: {
+        Args: {
+          user_id: string
+          reason: string
+        }
+        Returns: undefined
+      }
+      is_manager: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
+    }
     Enums: {
-      Role: "EMPLOYEE" | "MANAGER";
-      Status: "APPROVED" | "DECLINED" | "WAITING";
-    };
+      Role: "EMPLOYEE" | "MANAGER"
+      Status: "APPROVED" | "DECLINED" | "WAITING"
+    }
     CompositeTypes: {
       [_ in never]: never
-    };
-  };
+    }
+  }
 }
 
 export type Tables<
@@ -101,7 +151,7 @@ export type Tables<
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
+      Row: infer R
     }
     ? R
     : never
@@ -109,7 +159,7 @@ export type Tables<
       Database["public"]["Views"])
   ? (Database["public"]["Tables"] &
       Database["public"]["Views"])[PublicTableNameOrOptions] extends {
-      Row: infer R;
+      Row: infer R
     }
     ? R
     : never
@@ -124,13 +174,13 @@ export type TablesInsert<
     : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
+      Insert: infer I
     }
     ? I
     : never
   : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
   ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
-      Insert: infer I;
+      Insert: infer I
     }
     ? I
     : never
@@ -145,13 +195,13 @@ export type TablesUpdate<
     : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
+      Update: infer U
     }
     ? U
     : never
   : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
   ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
-      Update: infer U;
+      Update: infer U
     }
     ? U
     : never
