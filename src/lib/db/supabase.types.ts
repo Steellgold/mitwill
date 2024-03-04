@@ -46,18 +46,21 @@ export type Database = {
           firstName: string | null;
           lastName: string | null;
           role: Database["public"]["Enums"]["Role"];
+          status: Database["public"]["Enums"]["Status"];
           userId: string;
         };
         Insert: {
           firstName?: string | null;
           lastName?: string | null;
           role?: Database["public"]["Enums"]["Role"];
+          status?: Database["public"]["Enums"]["Status"];
           userId: string;
         };
         Update: {
           firstName?: string | null;
           lastName?: string | null;
           role?: Database["public"]["Enums"]["Role"];
+          status?: Database["public"]["Enums"]["Status"];
           userId?: string;
         };
         Relationships: [
@@ -79,6 +82,7 @@ export type Database = {
     };
     Enums: {
       Role: "EMPLOYEE" | "MANAGER";
+      Status: "APPROVED" | "DECLINED" | "WAITING";
     };
     CompositeTypes: {
       [_ in never]: never
