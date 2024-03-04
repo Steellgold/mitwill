@@ -27,7 +27,7 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
       <Image source={require("./assets/logo.jpg")} style={{ width: 100, height: 40 }} />
       <Appbar.Content title="" />
 
-      <Appbar.Action icon="numeric" onPress={() => navigation.navigate("CounterScreen")} disabled />
+      <Appbar.Action icon="numeric" onPress={() => navigation.navigate("CounterScreen")} />
       <Appbar.Action icon="calendar-month" onPress={() => navigation.navigate("CalendarScreen")} disabled />
 
       <Appbar.Action icon={session ? "account" : "account-key"} disabled={
