@@ -4,35 +4,52 @@ import { NoCheckCard } from "./NoCheckCard";
 import { useAsync } from "../../hooks/useAsync";
 import { supabase } from "../../db/supabase";
 import { dayJS } from "../../dayjs/day-js";
-import type { Database } from "../../db/supabase.types";
 import { ActivityIndicator, Card, DataTable, Icon, IconButton, TouchableRipple } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+import type { Check } from "../../providers/session";
 
 export const WeeklyCheckCard = (): ReactElement => {
   const { session } = useSession();
   if (!session) return <NoCheckCard type="weekly" />;
   const { navigate } = useNavigation();
 
-  const [startWeek, setStartWeek] = useState<string>(dayJS().startOf("week").format("YYYY-MM-DD"));
-  const [endWeek, setEndWeek] = useState<string>(dayJS().endOf("week").format("YYYY-MM-DD"));
-  const [checks, setChecks] = useState<Database["public"]["Tables"]["checks"]["Row"][] | []>([]);
+  const [week, setWeek] = useState<string>(dayJS().format("YYYY-MM-DD"));
+  const [checks, setChecks] = useState<Check[] | []>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    setStartWeek(dayJS().startOf("week").format("YYYY-MM-DD"));
-    setEndWeek(dayJS().endOf("week").format("YYYY-MM-DD"));
+  const fetchChecks = async(weekToFetch: string): Promise<void> => {
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("checks")
+      .select("*")
+      .eq("userId", session.user.id)
+      .gte("date", dayJS(weekToFetch).startOf("week").format("YYYY-MM-DD"))
+      .lte("date", dayJS(weekToFetch).endOf("week").format("YYYY-MM-DD"))
+      .order("date", { ascending: false });
+
+    if (error) {
+      console.error("Error:WCC", error.message);
+    } else {
+      setChecks(data || []);
+    }
     setLoading(false);
-    setChecks([]);
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchChecks(week)
+      .then(() => console.log(`Checks fetched for the week of ${week}`))
+      .catch((error) => console.error("Error (WeeklyCheckCard.tsx l43):", error));
+  }, [week]);
 
   useAsync(async() => {
     const { data, error } = await supabase
       .from("checks")
       .select("*")
       .eq("userId", session.user.id)
-      .gte("date", startWeek)
-      .lte("date", endWeek)
-      .order("date", { ascending: false });
+      .gte("date", dayJS(week).startOf("week").format("YYYY-MM-DD"))
+      .lte("date", dayJS(week).endOf("week").format("YYYY-MM-DD"))
+      .order("date", { ascending: true });
 
     if (error) {
       console.error("Error:WCC", error.message);
@@ -41,39 +58,23 @@ export const WeeklyCheckCard = (): ReactElement => {
     }
   }, [session]);
 
-  const handleSwitchWeek = async(action: "previous" | "next" | "reset"): Promise<void> => {
-    setLoading(true);
+  const handleSwitchWeek = (action: "previous" | "next" | "reset"): void => {
+    let newWeek;
     if (action === "previous") {
-      setStartWeek(dayJS(startWeek).add(-7, "d").format("YYYY-MM-DD"));
-      setEndWeek(dayJS(endWeek).add(-7, "d").format("YYYY-MM-DD"));
+      newWeek = dayJS(week).add(-1, "week").format("YYYY-MM-DD");
     } else if (action === "next") {
-      setStartWeek(dayJS(startWeek).add(7, "d").format("YYYY-MM-DD"));
-      setEndWeek(dayJS(endWeek).add(7, "d").format("YYYY-MM-DD"));
+      newWeek = dayJS(week).add(1, "week").format("YYYY-MM-DD");
     } else {
-      setStartWeek(dayJS().startOf("week").format("YYYY-MM-DD"));
-      setEndWeek(dayJS().endOf("week").format("YYYY-MM-DD"));
+      newWeek = dayJS().format("YYYY-MM-DD");
     }
 
-    const { data, error } = await supabase
-      .from("checks")
-      .select("*")
-      .eq("userId", session.user.id)
-      .gte("date", startWeek)
-      .lte("date", endWeek)
-      .order("date", { ascending: false });
-
-    if (error) {
-      console.error("Error:WCC", error.message);
-    } else {
-      setTimeout(() => setLoading(false), 200);
-      setChecks(data || []);
-    }
+    setWeek(newWeek);
   };
 
   return (
     <Card>
       <Card.Title
-        title={`Semaine du ${dayJS(startWeek).startOf("week").format("DD MMMM")} au ${dayJS(endWeek).endOf("week").add(-2, "d").format("DD MMMM")}`}
+        title={`Semaine du ${dayJS(week).startOf("week").format("DD MMMM")} au ${dayJS(week).endOf("week").add(-2, "d").format("DD MMMM")}`}
         subtitle="Liste des pointages de la semaine"
         subtitleVariant="bodySmall"
         subtitleStyle={{ marginTop: -5 }}
@@ -100,7 +101,10 @@ export const WeeklyCheckCard = (): ReactElement => {
             <DataTable.Row>
               <DataTable.Cell>{dayJS(check.date).format("ddd DD/MM")}</DataTable.Cell>
               <DataTable.Cell numeric>{dayJS(check.start).format("HH[h ]mm[m]")}</DataTable.Cell>
-              <DataTable.Cell numeric>{dayJS(check.end).format("HH[h ]mm[m]")}</DataTable.Cell>
+              {check.end
+                ? <DataTable.Cell numeric>{dayJS(check.end).format("HH[h ]mm[m]")}</DataTable.Cell>
+                : <DataTable.Cell numeric>En cours</DataTable.Cell>
+              }
             </DataTable.Row>
           </TouchableRipple>
         ))}
