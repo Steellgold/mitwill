@@ -9,7 +9,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { Check } from "../../providers/session";
 
 export const WeeklyCheckCard = (): ReactElement => {
-  const { session } = useSession();
+  const { session, needDataRefresh } = useSession();
   if (!session) return <NoCheckCard type="weekly" />;
   const { navigate } = useNavigation();
 
@@ -39,8 +39,8 @@ export const WeeklyCheckCard = (): ReactElement => {
   useEffect(() => {
     fetchChecks(week)
       .then(() => console.log(`Checks fetched for the week of ${week}`))
-      .catch((error) => console.error("Error (WeeklyCheckCard.tsx l43):", error));
-  }, [week]);
+      .catch((error) => console.error("Error:", error));
+  }, [week, needDataRefresh]);
 
   useAsync(async() => {
     const { data, error } = await supabase
