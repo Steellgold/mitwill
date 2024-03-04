@@ -2,6 +2,10 @@ import type { PropsWithChildren, ReactElement } from "react";
 import React, { createContext, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../db/supabase";
+import type { Database } from "../db/supabase.types";
+import { dayJS } from "../dayjs/day-js";
+
+export type Check = Database["public"]["Tables"]["checks"]["Row"];
 
 export type SessionContextType = {
   logout: () => Promise<void>;
@@ -9,6 +13,24 @@ export type SessionContextType = {
   hasSession: boolean;
 
   logoutLoading?: boolean;
+
+  activeCheck: Check | null;
+  checks: Check[] | [];
+
+  startCheck: () => Promise<void>;
+  endCheck: () => Promise<void>;
+
+  reloadChecks?: () => Promise<void>;
+
+  needDataRefresh?: boolean;
+  setNeedDataRefresh?: (value: boolean) => void;
+  appLoading?: boolean;
+
+  role: Database["public"]["Enums"]["Role"];
+  status: Database["public"]["Enums"]["Status"];
+
+  refreshing?: boolean;
+  refresh?: () => void;
 };
 
 export const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -17,15 +39,67 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
   const [session, setSession] = useState<Session | null>(null);
   const [logoutLoading, setLogoutLoading] = useState<boolean>(false);
 
+  const [activeCheck, setActiveCheck] = useState<Check | null>(null);
+  const [checks, setChecks] = useState<Check[] | []>([]);
+
+  const [needDataRefresh, setNeedDataRefresh] = useState<boolean>(false);
+  const [appLoading, setAppLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  const [status, setStatus] = useState<Database["public"]["Enums"]["Status"]>("WAITING");
+  const [role, setRole] = useState<Database["public"]["Enums"]["Role"]>("EMPLOYEE");
+
+  const fetchChecks = async(): Promise<void> => {
+    if (!session) return console.log("No session");
+    const { data, error } = await supabase
+      .from("checks")
+      .select("*")
+      .eq("userId", session?.user.id || "")
+      .order("date", { ascending: false });
+
+    if (error) console.error("Error:", error);
+    if (data) {
+      const activeCheck = data.find((check) => !check.end);
+      if (activeCheck) setActiveCheck(activeCheck);
+      setChecks(data);
+    }
+  };
+
+  const fetchUser = async(): Promise<void> => {
+    if (!session) return console.log("No session");
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("userId", session?.user.id || "");
+
+    if (error) console.error("Error:", error);
+    if (data) {
+      setStatus(data[0].status);
+      setRole(data[0].role);
+    }
+  };
+
   useEffect(() => {
+    setTimeout(() => setAppLoading(false), 1000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session || null);
+
+      if (session !== null) {
+        fetchChecks()
+          .then(() => console.log("Checks fetched"))
+          .catch((error) => console.error("Error", error));
+
+        fetchUser()
+          .then(() => console.log("User fetched"))
+          .catch((error) => console.error("Error", error));
+      }
     });
 
     return (): void => {
       subscription?.unsubscribe();
     };
-  }, []);
+  }, [!session]);
 
   const logout = async(): Promise<void> => {
     setLogoutLoading(true);
@@ -33,12 +107,72 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
     setLogoutLoading(false);
   };
 
+  const startCheck = async(): Promise<void> => {
+    const { data, error } = await supabase
+      .from("checks")
+      .insert({
+        userId: session?.user.id || "",
+        date: dayJS().format("YYYY-MM-DD"),
+        start: dayJS().format("YYYY-MM-DD HH:mm:ss")
+      })
+      .select();
+
+    if (error) console.error("Error:", error);
+    if (data) {
+      setActiveCheck(data[0]);
+      setChecks((checks) => [data[0], ...checks]);
+      setNeedDataRefresh(true);
+    }
+  };
+
+  const endCheck = async(): Promise<void> => {
+    const { error } = await supabase
+      .from("checks")
+      .update({ end: dayJS().format("YYYY-MM-DD HH:mm:ss") })
+      .eq("uuid", activeCheck?.uuid || "")
+      .eq("userId", session?.user.id || "")
+      .single();
+
+    if (error) console.error("Error:", error);
+    setActiveCheck(null);
+    setChecks((checks) => checks.map((check) => check.uuid === activeCheck?.uuid ? { ...check, end: dayJS().toString() } : check));
+    setNeedDataRefresh(true);
+  };
+
+  const refresh = async(): Promise<void> => {
+    setRefreshing(true);
+    setNeedDataRefresh(true);
+
+    await fetchChecks();
+    await fetchUser();
+
+    setTimeout(() => setRefreshing(false), 1000);
+  };
+
   return (
     <SessionContext.Provider value={{
       logout,
       session,
       hasSession: session !== null,
-      logoutLoading
+      logoutLoading,
+
+      activeCheck,
+      checks,
+
+      startCheck,
+      endCheck,
+
+      appLoading,
+      needDataRefresh,
+      setNeedDataRefresh,
+
+      role,
+      status,
+
+      refreshing,
+      async refresh() {
+        await refresh();
+      }
     }}>
       {children}
     </SessionContext.Provider>
