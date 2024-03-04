@@ -1,5 +1,5 @@
 import { useState, type ReactElement, useEffect } from "react";
-import { View } from "react-native";
+import { View, Vibration } from "react-native";
 import { Avatar, Text, TouchableRipple } from "react-native-paper";
 
 export const CounterScreen = (): ReactElement => {
@@ -19,9 +19,15 @@ export const CounterScreen = (): ReactElement => {
     clearIncrementInterval();
     const id = setInterval(() => {
       setCounter((prevCounter) => {
-        if (action === "increment") return prevCounter + 1;
-        else if (action === "decrement" && prevCounter > 0) return prevCounter - 1;
-        else return prevCounter;
+        if (action === "increment") {
+          Vibration.vibrate(10);
+          return prevCounter + 1;
+        } else if (action === "decrement" && prevCounter > 0) {
+          Vibration.vibrate(10);
+          return prevCounter - 1;
+        } else {
+          return prevCounter;
+        }
       });
       setDelay((prevDelay) => Math.max(50, prevDelay - 50));
     }, delay);
@@ -42,7 +48,14 @@ export const CounterScreen = (): ReactElement => {
   return (
     <View style={{ flexDirection: "row", height: "100%", width: "100%", alignItems: "center", justifyContent: "center" }}>
       <TouchableRipple
-        onPress={() => setCounter(counter - 1)}
+        onPress={() => {
+          if (counter > 0) {
+            Vibration.vibrate(10);
+            setCounter(counter - 1);
+          } else {
+            Vibration.vibrate(100);
+          }
+        }}
         onLongPress={() => startIncrementInterval("decrement")}
         onPressOut={clearIncrementInterval}
         style={{ flex: 1, justifyContent: "center", alignItems: "center", height: "100%", zIndex: 1 }}
@@ -64,7 +77,10 @@ export const CounterScreen = (): ReactElement => {
       </View>
 
       <TouchableRipple
-        onPress={() => setCounter(counter + 1)}
+        onPress={() => {
+          Vibration.vibrate(10);
+          setCounter(counter + 1);
+        }}
         onLongPress={() => startIncrementInterval("increment")}
         onPressOut={clearIncrementInterval}
         style={{ flex: 1, justifyContent: "center", alignItems: "center", height: "100%", zIndex: 1 }}
