@@ -21,6 +21,7 @@ dayjs.extend(customParseFormat);
 
 dayjs.tz.setDefault("Europe/Paris");
 dayjs.locale("fr");
+dayjs().format();
 
 export const dayJS = dayjs;
 export { Dayjs } from "dayjs";
