@@ -31,7 +31,7 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
       <Appbar.Action icon="numeric" onPress={() => {
         navigation.popToTop();
         navigation.push("CounterScreen");
-      }} />
+      }} disabled={route.name === "CounterScreen"} />
 
       <Appbar.Action icon="calendar-month" onPress={() => navigation.push("CalendarScreen")} disabled />
 
