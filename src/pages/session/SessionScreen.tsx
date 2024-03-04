@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { useRef, type ReactElement, useState } from "react";
+import { type ReactElement, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Button, FAB, Portal, TextInput } from "react-native-paper";
 import { useSession } from "../../lib/hooks/useSession";
@@ -7,13 +7,14 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../App";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/db/supabase";
+import { useIsFocused } from "@react-navigation/native";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 export const SessionScreen = ({ navigation }: Props): ReactElement => {
   const { logout, session, logoutLoading } = useSession();
   if (!session) navigation.navigate("LoginScreen");
-  const fabRef = useRef(null);
+  const isFocused = useIsFocused();
 
   const [editLoading, setEditLoading] = useState(false);
   const [firstName, setFirstName] = useState(session?.user.user_metadata.firstName);
@@ -69,12 +70,12 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
 
         <Portal>
           <FAB
-            ref={fabRef}
             label="Déconnexion"
             mode="elevated"
             style={{ position: "absolute", margin: 16, right: 0, bottom: 0 }}
             icon="logout"
             loading={logoutLoading}
+            visible={isFocused}
             onPress={() => {
               logout()
                 .then(() => console.log("Logout successful"))
