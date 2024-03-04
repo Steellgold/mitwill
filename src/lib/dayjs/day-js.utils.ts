@@ -26,25 +26,67 @@ export const mjmonth = (date?: Date | string): string => {
   return dayJS(date).format("MMMM").replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
 };
 
-export const calculateDiff = (start: Date | string, end: Date | string, addZero = true): Diff => {
+export const calculateDiff = (
+  start: Date | string,
+  end: Date | string,
+  addZero = true,
+  defaultStartHour = "08:00",
+  defaultEndHour = "17:00"
+): Diff => {
   const startDate = dayJS(start);
   const endDate = dayJS(end);
   const diff = endDate.diff(startDate);
 
-  const duration = dayJS.duration(diff);
-  let days = duration.days().toString();
-  let hours = duration.hours().toString();
-  let minutes = duration.minutes().toString();
-  let seconds = duration.seconds().toString();
+  const totalDuration = dayJS.duration(diff);
+  let days = totalDuration.days().toString();
+  let hours = totalDuration.hours().toString();
+  let minutes = totalDuration.minutes().toString();
+  let seconds = totalDuration.seconds().toString();
 
   if (addZero) {
-    if (parseInt(days) < 10) days = `0${days}`;
-    if (parseInt(hours) < 10) hours = `0${hours}`;
-    if (parseInt(minutes) < 10) minutes = `0${minutes}`;
-    if (parseInt(seconds) < 10) seconds = `0${seconds}`;
+    days = addLeadingZero(days);
+    hours = addLeadingZero(hours);
+    minutes = addLeadingZero(minutes);
+    seconds = addLeadingZero(seconds);
   }
 
-  return { days, hours, minutes, seconds };
+  let nbrSuppsMinutes = 0;
+  let nbrNightsMinutes = 0;
+
+  let currentTime = startDate;
+  while (currentTime < endDate) {
+    const hour = currentTime.hour();
+    const minute = currentTime.minute();
+    const currentMinutes = hour * 60 + minute;
+    const nightStart = 21 * 60 + 30;
+    const nightEnd = 6 * 60;
+    const overtimeStart = dayJS(defaultStartHour, "HH:mm").hour() * 60;
+    const overtimeEnd = dayJS(defaultEndHour, "HH:mm").hour() * 60;
+
+    if ((currentMinutes >= nightStart) || (currentMinutes < nightEnd)) {
+      nbrNightsMinutes++;
+    }
+
+    if (currentMinutes < overtimeStart || currentMinutes >= overtimeEnd) {
+      nbrSuppsMinutes++;
+    }
+
+    currentTime = currentTime.add(1, "minute");
+  }
+
+  function addLeadingZero(number: string): string {
+    return parseInt(number) < 10 ? `0${number}` : number;
+  }
+
+  const convertMinutesToHoursAndMinutes = (totalMinutes: number): { hours: string; minutes: string } => ({
+    hours: addLeadingZero(Math.floor(totalMinutes / 60).toString()),
+    minutes: addLeadingZero((totalMinutes % 60).toString())
+  });
+
+  const nbrSupps = convertMinutesToHoursAndMinutes(nbrSuppsMinutes);
+  const nbrNights = convertMinutesToHoursAndMinutes(nbrNightsMinutes);
+
+  return { days, hours, minutes, seconds, nbrSupps, nbrNights };
 };
 
 export type ShiftB = {
@@ -64,3 +106,16 @@ export function nbrDaysWork(shiftData: WeekShifts[]): number {
 
   return days;
 }
+
+export const calculateNightHours = (shiftData: WeekShifts[]): number => {
+  if (shiftData.length === 0) return 0;
+  let hours = 0;
+  shiftData.map(week => week.shifts.map(shift => {
+    const start = dayJS(shift.start);
+    const end = dayJS(shift.end);
+    const diff = end.diff(start, "hours");
+    if (diff > 0) hours += diff;
+  }));
+
+  return hours;
+};

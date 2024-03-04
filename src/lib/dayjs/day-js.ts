@@ -6,6 +6,7 @@ import duration from "dayjs/plugin/duration";
 import dayOfYear from "dayjs/plugin/dayOfYear";
 import weekOfYear from "dayjs/plugin/weekOfYear";
 import isBetween from "dayjs/plugin/isBetween";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 
 require("dayjs/locale/fr");
 
@@ -16,6 +17,7 @@ dayjs.extend(objectSupport);
 dayjs.extend(dayOfYear);
 dayjs.extend(weekOfYear);
 dayjs.extend(isBetween);
+dayjs.extend(customParseFormat);
 
 dayjs.tz.setDefault("Europe/Paris");
 dayjs.locale("fr");

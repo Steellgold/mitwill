@@ -3,6 +3,14 @@ export type Diff = {
   hours: string;
   minutes: string;
   seconds: string;
+  nbrSupps: {
+    hours: string;
+    minutes: string;
+  };
+  nbrNights: {
+    hours: string;
+    minutes: string;
+  };
 };
 
 export type DiffWithLong = {
