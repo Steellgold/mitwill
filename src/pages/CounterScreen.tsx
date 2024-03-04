@@ -41,7 +41,6 @@ export const CounterScreen = (): ReactElement => {
 
   return (
     <View style={{ flexDirection: "row", height: "100%", width: "100%", alignItems: "center", justifyContent: "center" }}>
-      {/* text on the top */}
       <TouchableRipple
         onPress={() => setCounter(counter - 1)}
         onLongPress={() => startIncrementInterval("decrement")}
