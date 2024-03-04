@@ -9,6 +9,10 @@ import { LoginScreen } from "./src/pages/session/LoginScreen";
 import { SessionScreen } from "./src/pages/session/SessionScreen";
 import { RegisterScreen } from "./src/pages/session/RegisterScreen";
 import { CheckInfoScreen } from "./src/pages/check/CheckInfoScreen";
+import { useSession } from "./src/lib/hooks/useSession";
+import { View } from "react-native";
+import { ActivityIndicator, Button, Text } from "react-native-paper";
+import { ApprovalsScreen } from "./src/pages/session/company/ApprovalsScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -28,9 +32,52 @@ export type RootStackParamList = {
     end: string;
     userId: string;
   };
+
+  // Manage screens
+  ApprovalsScreen: undefined;
 };
 
 export const App = (): ReactElement => {
+  const { logoutLoading, appLoading, status, refresh, refreshing, session } = useSession();
+  if (appLoading || logoutLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 3 }}>
+        <ActivityIndicator size={"large"} style={{ marginBottom: 10 }} color="#fd7e47" />
+        {
+          logoutLoading
+            ? <Text>Déconnexion en cours...</Text>
+            : <Text>Chargement de l'application...</Text>
+        }
+      </View>
+    );
+  }
+
+  if (session && status === "WAITING" || status === "DECLINED") {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 3, padding: 20 }}>
+        {
+          status === "WAITING"
+            ? <Text style={{ textAlign: "center" }}>Votre compte est en attente de validation, veuillez patienter</Text>
+            : <Text style={{ textAlign: "center" }}>
+              Votre compte a été refusé, veuillez contacter un administrateur ou votre reponsable si vous pensez qu'il s'agit d'une erreur</Text>
+        }
+
+        <Button
+          mode="contained-tonal"
+          onPress={() => {
+            if (refreshing) return;
+            refresh?.();
+          }}
+          icon="refresh"
+          loading={refreshing}
+          style={{ marginTop: 10 }}
+        >
+          Rafraîchir
+        </Button>
+      </View>
+    );
+  }
+
   return (
     <Stack.Navigator
       initialRouteName="HomeScreen"
@@ -53,6 +100,9 @@ export const App = (): ReactElement => {
       <Stack.Screen name="SessionScreen" component={SessionScreen} />
 
       <Stack.Screen name="CheckInfoScreen" component={CheckInfoScreen} />
+
+      {/* Manage screens */}
+      <Stack.Screen name="ApprovalsScreen" component={ApprovalsScreen} />
     </Stack.Navigator>
   );
 };
