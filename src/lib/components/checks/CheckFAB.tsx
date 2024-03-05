@@ -1,4 +1,5 @@
-import { FAB, Portal } from "react-native-paper";
+/* eslint-disable max-len */
+import { Button, Dialog, FAB, Portal, Text } from "react-native-paper";
 import { useSession } from "../../hooks/useSession";
 import { useState, type ReactElement } from "react";
 import { StyleSheet } from "react-native";
@@ -11,10 +12,34 @@ type Props = {
 export const CheckFAB = ({ visible }: Props): ReactElement => {
   const { session, activeCheck, startCheck, endCheck, checks } = useSession();
   const [fabGroupOpen, setFabGroupOpen] = useState(false);
+  const [dialogPauseVisible, setDialogPauseVisible] = useState(false);
 
   if (activeCheck) {
     return (
       <Portal>
+        <Dialog
+          visible={dialogPauseVisible}
+          onDismiss={() => setDialogPauseVisible(false)}
+        >
+          <Dialog.Icon icon="coffee" />
+          <Dialog.Title style={styles.title}>Prise de pause</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodySmall" style={{ marginBottom: 10 }}>
+              Seules 20 minutes de pause sont automatiquement reconnues. Pour une pause plus longue, comme 45 minutes pour manger, veuillez confirmer en cliquant sur 'Confirmer'.
+            </Text>
+
+            <Text
+              style={{ color: "#fd4646" }}
+              variant="bodySmall"
+            >
+                En cliquant sur "Confirmer", vous confirmez que vous avez pris une pause de 45 minutes.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDialogPauseVisible(false)}>Confirmer</Button>
+          </Dialog.Actions>
+        </Dialog>
+
         <FAB.Group
           open={fabGroupOpen}
           onStateChange={({ open }) => setFabGroupOpen(open)}
@@ -32,6 +57,11 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
                   .catch((error) => console.error("Error (CheckFAB.tsx l31):", error));
                 console.log("FAB pressed", session?.user.user_metadata);
               }
+            },
+            {
+              icon: "coffee-outline",
+              label: "Pause (45 min)",
+              onPress: () => setDialogPauseVisible(true)
             }
           ]}
         />
@@ -69,5 +99,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 0,
     bottom: 0
+  },
+  title: {
+    textAlign: "center"
+  },
+  bold: {
+    fontWeight: "bold"
   }
 });
