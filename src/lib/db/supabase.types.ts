@@ -44,6 +44,90 @@ export type Database = {
           }
         ];
       };
+      plannings: {
+        Row: {
+          by: string;
+          created_at: string;
+          for: string;
+          friday_end: string | null;
+          friday_start: string | null;
+          from: string;
+          monday_end: string | null;
+          monday_start: string | null;
+          saturday_end: string | null;
+          saturday_start: string | null;
+          sunday_end: string | null;
+          sunday_start: string | null;
+          thursday_end: string | null;
+          thursday_start: string | null;
+          to: string;
+          tuesday_end: string | null;
+          tuesday_start: string | null;
+          uuid: string;
+          wednesday_end: string | null;
+          wednesday_start: string | null;
+        };
+        Insert: {
+          by: string;
+          created_at?: string;
+          for: string;
+          friday_end?: string | null;
+          friday_start?: string | null;
+          from: string;
+          monday_end?: string | null;
+          monday_start?: string | null;
+          saturday_end?: string | null;
+          saturday_start?: string | null;
+          sunday_end?: string | null;
+          sunday_start?: string | null;
+          thursday_end?: string | null;
+          thursday_start?: string | null;
+          to: string;
+          tuesday_end?: string | null;
+          tuesday_start?: string | null;
+          uuid?: string;
+          wednesday_end?: string | null;
+          wednesday_start?: string | null;
+        };
+        Update: {
+          by?: string;
+          created_at?: string;
+          for?: string;
+          friday_end?: string | null;
+          friday_start?: string | null;
+          from?: string;
+          monday_end?: string | null;
+          monday_start?: string | null;
+          saturday_end?: string | null;
+          saturday_start?: string | null;
+          sunday_end?: string | null;
+          sunday_start?: string | null;
+          thursday_end?: string | null;
+          thursday_start?: string | null;
+          to?: string;
+          tuesday_end?: string | null;
+          tuesday_start?: string | null;
+          uuid?: string;
+          wednesday_end?: string | null;
+          wednesday_start?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "public_plannings_by_fkey";
+            columns: ["by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["userId"];
+          },
+          {
+            foreignKeyName: "public_plannings_for_fkey";
+            columns: ["for"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["userId"];
+          }
+        ];
+      };
       users: {
         Row: {
           active: string | null;
