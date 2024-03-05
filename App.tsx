@@ -13,6 +13,7 @@ import { useSession } from "./src/lib/hooks/useSession";
 import { View } from "react-native";
 import { ActivityIndicator, Button, Text } from "react-native-paper";
 import { ApprovalsScreen } from "./src/pages/session/company/ApprovalsScreen";
+import type { Check } from "./src/lib/providers/session";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -26,12 +27,7 @@ export type RootStackParamList = {
   RegisterScreen: undefined;
   SessionScreen: undefined;
 
-  CheckInfoScreen: {
-    date: string;
-    start: string;
-    end: string;
-    userId: string;
-  };
+  CheckInfoScreen: Check;
 
   // Manage screens
   ApprovalsScreen: undefined;
