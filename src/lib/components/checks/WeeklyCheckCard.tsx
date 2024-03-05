@@ -87,6 +87,7 @@ export const WeeklyCheckCard = (): ReactElement => {
           <DataTable.Title>Date</DataTable.Title>
           <DataTable.Title numeric>Début</DataTable.Title>
           <DataTable.Title numeric>Sortie</DataTable.Title>
+          <DataTable.Title numeric>Pause</DataTable.Title>
         </DataTable.Header>
 
         {loading ? (
@@ -106,6 +107,10 @@ export const WeeklyCheckCard = (): ReactElement => {
               {check.end
                 ? <DataTable.Cell numeric>{dayJS(check.end).format("HH[h ]mm[m]")}</DataTable.Cell>
                 : <DataTable.Cell numeric>En cours</DataTable.Cell>
+              }
+              {check.pauseTaken
+                ? <DataTable.Cell numeric>45 min</DataTable.Cell>
+                : <DataTable.Cell numeric>20 min</DataTable.Cell>
               }
             </DataTable.Row>
           </TouchableRipple>
