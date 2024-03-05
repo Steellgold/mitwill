@@ -4,9 +4,10 @@ import { NoCheckCard } from "./NoCheckCard";
 import { useAsync } from "../../hooks/useAsync";
 import { supabase } from "../../db/supabase";
 import { dayJS } from "../../dayjs/day-js";
-import { ActivityIndicator, Card, DataTable, Icon, IconButton, TouchableRipple } from "react-native-paper";
+import { ActivityIndicator, Button, Card, DataTable, Icon, IconButton, TouchableRipple } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import type { Check } from "../../providers/session";
+import { View } from "react-native";
 
 export const WeeklyCheckCard = (): ReactElement => {
   const { session, needDataRefresh } = useSession();
@@ -16,6 +17,7 @@ export const WeeklyCheckCard = (): ReactElement => {
   const [week, setWeek] = useState<string>(dayJS().format("YYYY-MM-DD"));
   const [checks, setChecks] = useState<Check[] | []>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [r, setR] = useState<number>(0);
 
   const fetchChecks = async(weekToFetch: string): Promise<void> => {
     setLoading(true);
@@ -40,7 +42,7 @@ export const WeeklyCheckCard = (): ReactElement => {
     fetchChecks(week)
       .then(() => console.log(`Checks fetched for the week of ${week}`))
       .catch((error) => console.error("Error:", error));
-  }, [week, needDataRefresh]);
+  }, [week, needDataRefresh, r]);
 
   useAsync(async() => {
     const { data, error } = await supabase
@@ -110,11 +112,41 @@ export const WeeklyCheckCard = (): ReactElement => {
         ))}
       </DataTable>
 
-      <Card.Actions>
-        <IconButton mode="contained-tonal" onPress={() => void handleSwitchWeek("previous")} icon={() => <Icon size={16} source={"arrow-left"}/>} />
-        <IconButton mode="contained-tonal" onPress={() => void handleSwitchWeek("reset")} icon={() => <Icon size={16} source={"calendar-today"}/>} />
-        <IconButton mode="contained-tonal" onPress={() => void handleSwitchWeek("next")} icon={() => <Icon size={16} source={"arrow-right"}/>} />
+      <Card.Actions style={{ flexDirection: "row" }}>
+        <View style={{ flex: 1, flexDirection: "row", justifyContent: "flex-start" }}>
+
+          <Button
+            mode="text"
+            onPress={() => setR(r + 1)}
+            labelStyle={{ color: "#1e1e1e" }}
+            disabled={loading}
+            icon={() => <Icon size={16} source={"refresh"} />}
+            style={{ alignSelf: "flex-start" }}
+          >
+            Rafraîchir
+          </Button>
+        </View>
+
+        <View style={{ flexDirection: "row", alignSelf: "flex-end" }}>
+          <IconButton
+            mode="contained-tonal"
+            onPress={() => void handleSwitchWeek("previous")}
+            icon={() => <Icon size={16} source={"arrow-left"} />}
+          />
+          <IconButton
+            mode="contained-tonal"
+            disabled={dayJS(week).isSame(dayJS(), "week")}
+            onPress={() => void handleSwitchWeek("reset")}
+            icon={() => <Icon size={16} source={"calendar-today"} />}
+          />
+          <IconButton
+            mode="contained-tonal"
+            onPress={() => void handleSwitchWeek("next")}
+            icon={() => <Icon size={16} source={"arrow-right"} />}
+          />
+        </View>
       </Card.Actions>
+
     </Card>
   );
 };
