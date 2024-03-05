@@ -7,9 +7,13 @@ import { NoCheckCard } from "./NoCheckCard";
 import type { Diff } from "../../dayjs/day-js.types";
 
 export const CheckCard = (): ReactElement => {
-  const { session, activeCheck } = useSession();
+  const { session, activeCheck, checks } = useSession();
   if (!session) return <NoCheckCard type="session" />;
-  if (!activeCheck) return <NoCheckCard type="daily" />;
+  if (!activeCheck) return <NoCheckCard type={
+    checks.filter((check) => dayJS(check.start).dayOfYear() === dayJS().dayOfYear()).length > 0
+      ? "daily-already-ended"
+      : "daily"
+  } />;
 
   const [showSeconds, setShowSeconds] = useState(false);
 
