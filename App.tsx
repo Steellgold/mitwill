@@ -37,7 +37,7 @@ export const App = (): ReactElement => {
   const { logoutLoading, appLoading, status, refresh, refreshing, session } = useSession();
   if (appLoading || logoutLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 3 }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 3, backgroundColor: "#fffbfe" }}>
         <ActivityIndicator size={"large"} style={{ marginBottom: 10 }} color="#fd7e47" />
         {
           logoutLoading
@@ -50,7 +50,7 @@ export const App = (): ReactElement => {
 
   if (session && status === "WAITING" || status === "DECLINED") {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 3, padding: 20 }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 3, padding: 20, backgroundColor: "#fffbfe" }}>
         {
           status === "WAITING"
             ? <Text style={{ textAlign: "center" }}>Votre compte est en attente de validation, veuillez patienter</Text>
