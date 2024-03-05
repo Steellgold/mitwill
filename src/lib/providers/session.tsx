@@ -15,6 +15,7 @@ export type SessionContextType = {
   logoutLoading?: boolean;
 
   activeCheck: Check | null;
+  setPauseTaken: (value: boolean) => Promise<void>;
   checks: Check[] | [];
 
   startCheck: () => Promise<void>;
@@ -137,6 +138,7 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
     setActiveCheck(null);
     setChecks((checks) => checks.map((check) => check.uuid === activeCheck?.uuid ? { ...check, end: dayJS().toString() } : check));
     setNeedDataRefresh(true);
+    await refresh();
   };
 
   const refresh = async(): Promise<void> => {
@@ -149,6 +151,21 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
     setTimeout(() => setRefreshing(false), 1000);
   };
 
+  const setPauseTaken = async(value: boolean): Promise<void> => {
+    if (!session) return console.error("No session");
+    if (!activeCheck) return console.error("No active check");
+    const { error } = await supabase
+      .from("checks")
+      .update({ pauseTaken: value })
+      .eq("uuid", activeCheck.uuid)
+      .eq("userId", session?.user.id || "")
+      .single();
+
+    if (error) console.error("Error:", error);
+    setNeedDataRefresh(true);
+    setActiveCheck({ ...activeCheck, pauseTaken: value });
+  };
+
   return (
     <SessionContext.Provider value={{
       logout,
@@ -157,6 +174,9 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
       logoutLoading,
 
       activeCheck,
+      async setPauseTaken(value: boolean) {
+        await setPauseTaken(value);
+      },
       checks,
 
       startCheck,
