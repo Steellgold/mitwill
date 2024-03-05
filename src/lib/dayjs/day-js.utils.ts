@@ -30,8 +30,8 @@ export const calculateDiff = (
   start: Date | string,
   end: Date | string,
   addZero = true,
-  defaultStartHour = "08:00",
-  defaultEndHour = "17:00"
+  defaultStartHour = "06:00",
+  defaultEndHour = "14:00"
 ): Diff => {
   const startDate = dayJS(start);
   const endDate = dayJS(end);
