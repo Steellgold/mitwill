@@ -31,7 +31,11 @@ export const calculateDiff = (
   end: Date | string,
   addZero = true,
   defaultStartHour = "06:00",
-  defaultEndHour = "14:00"
+  defaultEndHour = "14:00",
+  remove: {
+    hours: number;
+    minutes: number;
+  } = { hours: 0, minutes: 0 }
 ): Diff => {
   const startDate = dayJS(start);
   const endDate = dayJS(end);
@@ -85,6 +89,14 @@ export const calculateDiff = (
 
   const nbrSupps = convertMinutesToHoursAndMinutes(nbrSuppsMinutes);
   const nbrNights = convertMinutesToHoursAndMinutes(nbrNightsMinutes);
+
+  if (remove.hours > 0) {
+    hours = (parseInt(hours) - remove.hours).toString();
+  }
+
+  if (remove.minutes > 0) {
+    minutes = (parseInt(minutes) - remove.minutes).toString();
+  }
 
   return { days, hours, minutes, seconds, nbrSupps, nbrNights };
 };
