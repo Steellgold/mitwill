@@ -132,20 +132,6 @@ export type Database = {
         };
         Returns: boolean;
       };
-      update_pause_taken: {
-        Args: {
-          _uuid: string;
-          _newpausetaken: boolean;
-        };
-        Returns: {
-          uuid: string;
-          userid: number;
-          start: string;
-          end: string;
-          date: string;
-          pausetaken: boolean;
-        }[];
-      };
     };
     Enums: {
       Role: "EMPLOYEE" | "MANAGER";
