@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useState, type ReactElement } from "react";
 import { Image, View } from "react-native";
-import { Appbar, Badge, Text } from "react-native-paper";
+import { Appbar, Badge, Text, Tooltip } from "react-native-paper";
 import type { RootStackParamList } from "../../../App";
 import { useSession } from "../hooks/useSession";
 import { useAsync } from "../hooks/useAsync";
@@ -39,31 +39,42 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
       <Image source={require("./assets/logo.jpg")} style={{ width: 100, height: 40 }} />
       <Appbar.Content title="" />
 
-      <Appbar.Action icon="numeric" onPress={() => {
-        navigation.popToTop();
-        navigation.push("CounterScreen");
-      }} disabled={route.name === "CounterScreen"} />
+      <Tooltip title="Compteur" leaveTouchDelay={200} enterTouchDelay={200}>
+        <Appbar.Action icon="numeric" onPress={() => {
+          navigation.popToTop();
+          navigation.push("CounterScreen");
+        }} disabled={route.name === "CounterScreen"} />
+      </Tooltip>
 
-      <Appbar.Action icon="calendar-month" onPress={() => navigation.push("CalendarScreen")} disabled />
+      {/* Todo, for now the app has only one little app-in-app */}
+      {/* <Appbar.Action icon="apps" onPress={() => navigation.push("HomeScreen")} disabled={route.name === "HomeScreen"} /> */}
+
+      <Tooltip title="Plannings" leaveTouchDelay={200} enterTouchDelay={200}>
+        <Appbar.Action icon="calendar-month" onPress={() => navigation.push("CalendarScreen")} disabled />
+      </Tooltip>
 
       {role === "MANAGER" && (
         <View style={{ position: "relative" }}>
-          <Appbar.Action
-            icon="stamper"
-            onPress={() => navigation.push("ApprovalsScreen")}
-            disabled={role !== "MANAGER"}
-          />
+          <Tooltip title="Approbations" leaveTouchDelay={200} enterTouchDelay={200}>
+            <Appbar.Action
+              icon="stamper"
+              onPress={() => navigation.push("ApprovalsScreen")}
+              disabled={role !== "MANAGER"}
+            />
+          </Tooltip>
           {waitingUsers > 0 && <Badge style={{ position: "absolute", top: 0, right: 0 }} visible={true}>{waitingUsers}</Badge>}
         </View>
       )}
 
-      <Appbar.Action icon={session ? "account" : "account-key"} disabled={
-        !session && route.name === "LoginScreen"
+      <Tooltip title="Compte" leaveTouchDelay={200} enterTouchDelay={200}>
+        <Appbar.Action icon={session ? "account" : "account-key"} disabled={
+          !session && route.name === "LoginScreen"
         || session && route.name === "SessionScreen"
         || !session && route.name === "RegisterScreen"
-      } onPress={() => {
-        navigation.push(session ? "SessionScreen" : "LoginScreen");
-      }} />
+        } onPress={() => {
+          navigation.push(session ? "SessionScreen" : "LoginScreen");
+        }} />
+      </Tooltip>
     </Appbar>
   );
 };
