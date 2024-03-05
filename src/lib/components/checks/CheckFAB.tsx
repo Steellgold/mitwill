@@ -2,15 +2,34 @@
 import { Button, Dialog, FAB, Portal, Text } from "react-native-paper";
 import { useSession } from "../../hooks/useSession";
 import { useState, type ReactElement } from "react";
+import type { Animated, ColorValue, GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from "react-native";
 import { StyleSheet } from "react-native";
 import { dayJS } from "../../dayjs/day-js";
+import type { IconSource } from "react-native-paper/lib/typescript/components/Icon";
 
 type Props = {
   visible: boolean;
 };
 
+type Action = {
+  icon: IconSource;
+  label?: string;
+  color?: string;
+  labelTextColor?: string;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  style?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>;
+  containerStyle?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>;
+  labelStyle?: StyleProp<TextStyle>;
+  labelMaxFontSizeMultiplier?: number;
+  onPress: (e: GestureResponderEvent) => void;
+  size?: "small" | "medium";
+  testID?: string;
+  rippleColor?: ColorValue;
+}
+
 export const CheckFAB = ({ visible }: Props): ReactElement => {
-  const { session, activeCheck, startCheck, endCheck, checks } = useSession();
+  const { session, activeCheck, startCheck, endCheck, checks, setPauseTaken } = useSession();
   const [fabGroupOpen, setFabGroupOpen] = useState(false);
   const [dialogPauseVisible, setDialogPauseVisible] = useState(false);
 
@@ -18,7 +37,7 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
     return (
       <Portal>
         <Dialog
-          visible={dialogPauseVisible}
+          visible={dialogPauseVisible && !activeCheck.pauseTaken}
           onDismiss={() => setDialogPauseVisible(false)}
         >
           <Dialog.Icon icon="coffee" />
@@ -36,7 +55,12 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setDialogPauseVisible(false)}>Confirmer</Button>
+            <Button onPress={() => setDialogPauseVisible(false)}>Annuler</Button>
+            {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
+            <Button onPress={async() => {
+              await setPauseTaken(true);
+              setDialogPauseVisible(false);
+            }}>Confirmer</Button>
           </Dialog.Actions>
         </Dialog>
 
@@ -60,10 +84,18 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
             },
             {
               icon: "coffee-outline",
-              label: "Pause (45 min)",
+              label: activeCheck.pauseTaken ? "Pause déjà prise" : "Prendre une pause de 45 minutes",
+              labelStyle: {
+                opacity: activeCheck.pauseTaken ? 0.5 : 1
+              },
+              style: {
+                opacity:
+                  activeCheck.pauseTaken ? fabGroupOpen ? 0.5 : 0 : fabGroupOpen ? 1 : 0
+
+              },
               onPress: () => setDialogPauseVisible(true)
             }
-          ]}
+          ] as Action[]}
         />
       </Portal>
     );
