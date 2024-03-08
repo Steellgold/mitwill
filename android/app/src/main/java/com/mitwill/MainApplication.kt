@@ -1,4 +1,4 @@
-package com.mitwill
+package fr.gaetanhus.mitwill
 
 import android.app.Application
 import com.facebook.react.PackageList

@@ -1,4 +1,4 @@
-package com.mitwill
+package fr.gaetanhus.mitwill
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
