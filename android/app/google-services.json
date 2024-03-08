@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "790099054122",
+    "project_id": "timing-71f8a",
+    "storage_bucket": "timing-71f8a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:790099054122:android:b50767c41b31f55f347d53",
+        "android_client_info": {
+          "package_name": "fr.gaetanhus.mitwill"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnImxZG1DKRJ85JKpZZlF4vK2AT7sKBIs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
