@@ -6,6 +6,7 @@ import type { RootStackParamList } from "../../../App";
 import { useSession } from "../hooks/useSession";
 import { useAsync } from "../hooks/useAsync";
 import { supabase } from "../db/supabase";
+import { dayJS } from "../dayjs/day-js";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -34,23 +35,26 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
   return (
     <Appbar>
       {navigation.canGoBack() && <Appbar.BackAction onPress={navigation.goBack} />}
+      {!navigation.canGoBack() && route.name !== "HomeScreen" && <Appbar.BackAction onPress={() => navigation.popToTop()} />}
       {!navigation.canGoBack() && <Text>{"    "}</Text>}
       {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
       <Image source={require("./assets/logo.jpg")} style={{ width: 100, height: 40 }} />
       <Appbar.Content title="" />
 
-      <Tooltip title="Compteur" leaveTouchDelay={200} enterTouchDelay={200}>
+      {/* <Tooltip title="Compteur" leaveTouchDelay={200} enterTouchDelay={200}>
         <Appbar.Action icon="numeric" onPress={() => {
           navigation.popToTop();
           navigation.push("CounterScreen");
         }} disabled={route.name === "CounterScreen"} />
-      </Tooltip>
+      </Tooltip> */}
 
       {/* Todo, for now the app has only one little app-in-app */}
       {/* <Appbar.Action icon="apps" onPress={() => navigation.push("HomeScreen")} disabled={route.name === "HomeScreen"} /> */}
 
       <Tooltip title="Plannings" leaveTouchDelay={200} enterTouchDelay={200}>
-        <Appbar.Action icon="calendar-month" onPress={() => navigation.push("CalendarScreen")} disabled />
+        <Appbar.Action icon="calendar-month" onPress={() => navigation.push("PlanningScreen", {
+          date: dayJS().format("YYYY-MM-DD")
+        })} disabled={route.name === "PlanningScreen"} />
       </Tooltip>
 
       {role === "MANAGER" && (
