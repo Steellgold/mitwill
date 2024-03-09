@@ -48,10 +48,11 @@ export type Database = {
         Row: {
           by: string;
           created_at: string;
-          for: string;
+          for: string[];
           friday_end: string | null;
           friday_start: string | null;
           from: string;
+          is_night: boolean;
           monday_end: string | null;
           monday_start: string | null;
           saturday_end: string | null;
@@ -70,10 +71,11 @@ export type Database = {
         Insert: {
           by: string;
           created_at?: string;
-          for: string;
+          for: string[];
           friday_end?: string | null;
           friday_start?: string | null;
           from: string;
+          is_night?: boolean;
           monday_end?: string | null;
           monday_start?: string | null;
           saturday_end?: string | null;
@@ -92,10 +94,11 @@ export type Database = {
         Update: {
           by?: string;
           created_at?: string;
-          for?: string;
+          for?: string[];
           friday_end?: string | null;
           friday_start?: string | null;
           from?: string;
+          is_night?: boolean;
           monday_end?: string | null;
           monday_start?: string | null;
           saturday_end?: string | null;
@@ -118,13 +121,6 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["userId"];
-          },
-          {
-            foreignKeyName: "public_plannings_for_fkey";
-            columns: ["for"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["userId"];
           }
         ];
       };
@@ -136,8 +132,10 @@ export type Database = {
           declinedAt: string | null;
           declinedFor: string | null;
           email: string;
+          fcm_token: string | null;
           firstName: string | null;
           lastName: string | null;
+          notify_approbations: boolean;
           role: Database["public"]["Enums"]["Role"];
           status: Database["public"]["Enums"]["Status"];
           updatedAt: string;
@@ -150,8 +148,10 @@ export type Database = {
           declinedAt?: string | null;
           declinedFor?: string | null;
           email: string;
+          fcm_token?: string | null;
           firstName?: string | null;
           lastName?: string | null;
+          notify_approbations?: boolean;
           role?: Database["public"]["Enums"]["Role"];
           status?: Database["public"]["Enums"]["Status"];
           updatedAt?: string;
@@ -164,8 +164,10 @@ export type Database = {
           declinedAt?: string | null;
           declinedFor?: string | null;
           email?: string;
+          fcm_token?: string | null;
           firstName?: string | null;
           lastName?: string | null;
+          notify_approbations?: boolean;
           role?: Database["public"]["Enums"]["Role"];
           status?: Database["public"]["Enums"]["Status"];
           updatedAt?: string;
@@ -197,7 +199,22 @@ export type Database = {
         Args: {
           user_id: string;
         };
-        Returns: undefined;
+        Returns: {
+          active: string | null;
+          approvedAt: string | null;
+          createdAt: string;
+          declinedAt: string | null;
+          declinedFor: string | null;
+          email: string;
+          fcm_token: string | null;
+          firstName: string | null;
+          lastName: string | null;
+          notify_approbations: boolean;
+          role: Database["public"]["Enums"]["Role"];
+          status: Database["public"]["Enums"]["Status"];
+          updatedAt: string;
+          userId: string;
+        };
       };
       count_users_waiting: {
         Args: Record<PropertyKey, never>;
@@ -208,11 +225,36 @@ export type Database = {
           user_id: string;
           reason: string;
         };
-        Returns: undefined;
+        Returns: {
+          active: string | null;
+          approvedAt: string | null;
+          createdAt: string;
+          declinedAt: string | null;
+          declinedFor: string | null;
+          email: string;
+          fcm_token: string | null;
+          firstName: string | null;
+          lastName: string | null;
+          notify_approbations: boolean;
+          role: Database["public"]["Enums"]["Role"];
+          status: Database["public"]["Enums"]["Status"];
+          updatedAt: string;
+          userId: string;
+        };
+      };
+      get_approbator: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
       };
       is_manager: {
         Args: {
           user_id: string;
+        };
+        Returns: boolean;
+      };
+      is_planning_planned: {
+        Args: {
+          date: string;
         };
         Returns: boolean;
       };
