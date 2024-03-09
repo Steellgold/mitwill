@@ -14,6 +14,7 @@ export const ApprovalsScreen = (): ReactElement => {
   const [dialogVisibleFA, setDialogVisibleFA] = useState(false);
   const [dialogVisibleFRAC, setDialogVisibleFRAC] = useState(false);
   const [reason, setReason] = useState("");
+
   const [addReason, setAddReason] = useState(false);
 
   const [users, setUsers] = useState<{
@@ -74,7 +75,7 @@ export const ApprovalsScreen = (): ReactElement => {
             }
 
             {users.waitings.map((user) => (
-              <>
+              <View key={user.userId}>
                 {user && user.status === "WAITING" && (
                   <Card key={user.userId} style={{ marginVertical: 5 }}>
                     <Card.Title
@@ -98,7 +99,7 @@ export const ApprovalsScreen = (): ReactElement => {
 
                             <Checkbox.Item
                               label="Ajouter une raison"
-                              status={addReason ? "unchecked" : "checked"}
+                              status={addReason ? "checked" : "unchecked"}
                               onPress={() => {
                                 setAddReason(!addReason);
                                 setReason(addReason ? "" : "Raison non spécifiée (N/A)");
@@ -111,7 +112,7 @@ export const ApprovalsScreen = (): ReactElement => {
                               style={{ marginTop: 10 }}
                               inputMode="text"
                               multiline
-                              disabled={addReason}
+                              disabled={!addReason}
                               value={reason}
                               onChangeText={setReason}
                             />
@@ -131,6 +132,21 @@ export const ApprovalsScreen = (): ReactElement => {
                                   waitings: prev.waitings.filter((u) => u.userId !== user.userId),
                                   declineds: [...prev.declineds, user]
                                 }));
+
+                                console.log("User declined:", user);
+
+                                await supabase
+                                  .functions
+                                  .invoke("push", {
+                                    body: {
+                                      record: {
+                                        user_id: user.userId,
+                                        body: `Votre demande d'accès a été refusée${reason ? ` pour la raison suivante: ${reason}` : ""}`
+                                      }
+                                    }
+                                  })
+                                  .then((res) => console.log("Push response:", res))
+                                  .catch((error) => console.error("Error:", error));
 
                                 setReason("");
                                 setAddReason(false);
@@ -166,6 +182,18 @@ export const ApprovalsScreen = (): ReactElement => {
                                   approveds: [...prev.approveds, user]
                                 }));
 
+                                await supabase.functions
+                                  .invoke("push", {
+                                    body: {
+                                      record: {
+                                        user_id: user.userId,
+                                        body: "Votre demande d'accès a été approuvée"
+                                      }
+                                    }
+                                  })
+                                  .then((res) => console.log("Push response:", res))
+                                  .catch((error) => console.error("Error:", error));
+
                                 setReason("");
                                 setAddReason(false);
                               }
@@ -176,7 +204,7 @@ export const ApprovalsScreen = (): ReactElement => {
                     </Card.Actions>
                   </Card>
                 )}
-              </>
+              </View>
             ))}
           </View>
 
@@ -216,7 +244,7 @@ export const ApprovalsScreen = (): ReactElement => {
 
                           <Checkbox.Item
                             label="Ajouter une raison"
-                            status={addReason ? "unchecked" : "checked"}
+                            status={addReason ? "checked" : "unchecked"}
                             onPress={() => {
                               setAddReason(!addReason);
                               setReason(addReason ? "" : "Raison non spécifiée (N/A)");
@@ -229,7 +257,7 @@ export const ApprovalsScreen = (): ReactElement => {
                             style={{ marginTop: 10 }}
                             inputMode="text"
                             multiline
-                            disabled={addReason}
+                            disabled={!addReason}
                             value={reason}
                             onChangeText={setReason}
                           />
@@ -249,6 +277,19 @@ export const ApprovalsScreen = (): ReactElement => {
                                 approveds: prev.approveds.filter((u) => u.userId !== user.userId),
                                 declineds: [...prev.declineds, user]
                               }));
+
+                              await supabase
+                                .functions
+                                .invoke("push", {
+                                  body: {
+                                    record: {
+                                      user_id: user.userId,
+                                      body: `Votre accès a été retiré${reason ? ` pour la raison suivante: ${reason}` : ""}`
+                                    }
+                                  }
+                                })
+                                .then((res) => console.log("Push response:", res))
+                                .catch((error) => console.error("Error:", error));
 
                               setReason("");
                               setAddReason(false);
