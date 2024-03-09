@@ -168,7 +168,9 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
 
   return (
     <SessionContext.Provider value={{
-      logout,
+      async logout() {
+        await logout();
+      },
       session,
       hasSession: session !== null,
       logoutLoading,
