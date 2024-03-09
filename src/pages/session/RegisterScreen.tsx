@@ -1,10 +1,14 @@
-import { useState, type ReactElement } from "react";
+/* eslint-disable camelcase */
+import { useState, type ReactElement, useEffect } from "react";
 import { View } from "react-native";
 import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import { useSession } from "../../lib/hooks/useSession";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../App";
 import { supabase } from "../../lib/db/supabase";
+import messaging from "@react-native-firebase/messaging";
+import { IS_DEV } from "../../../v";
+import { OPEN_APPROBATION } from "../../../codes";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -15,24 +19,83 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
     navigation.navigate("HomeScreen");
   }
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const randomString = (length: number): string => {
+    let result = "";
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  };
+
+  const [firstName, setFirstName] = useState(IS_DEV ? randomString(5) : "");
+  const [lastName, setLastName] = useState(IS_DEV ? randomString(5) : "");
+  const [email, setEmail] = useState(IS_DEV ? `${randomString(5)}@gmail.com` : "");
+  const [password, setPassword] = useState(IS_DEV ? "Password1!@" : "");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [fcmToken, setFcmToken] = useState("");
+
+  useEffect(() => {
+    messaging()
+      .requestPermission()
+      .then(async(authStatus) => {
+        if (authStatus === messaging.AuthorizationStatus.AUTHORIZED) {
+          console.log("Notification permission status is authorized");
+          setFcmToken(await messaging().getToken());
+        } else {
+          console.log("Notification permission status is not authorized");
+        }
+      })
+      .catch((error) => {
+        console.log("Notification permission error:", error);
+      });
+  }, []);
+
   const handleRegister = async(): Promise<void> => {
     setLoading(true);
     const { data: { session }, error } = await supabase.auth.signUp({ email, password, options: { data: { firstName, lastName } } });
+
+    await supabase
+      .functions
+      .invoke("get_approbator")
+      .then(async(response) => {
+        await supabase
+          .functions
+          .invoke("push", {
+            body: {
+              record: {
+                user_id: response.data.userId || "",
+                title: "Nouvelle inscription",
+                body: `${firstName} ${lastName} s'est inscrit, cliquez ici pour accéder à la page d'approbation`,
+                action: OPEN_APPROBATION
+              }
+            }
+          })
+          .then(() => console.log("Notification sent!"))
+          .catch((error) => console.error("Error (handleRegister in RegisterScreen.tsx l39):", error));
+      })
+      .catch((error) => {
+        console.error("Error (handleRegister in RegisterScreen.tsx l39):", error);
+      });
+
     if (error) {
       setError(error.message);
       setLoading(false);
-      console.log("Error (handleRegister in RegisterScreen.tsx l32):", error.message);
     } else {
       setLoading(true);
-      const { error } = await supabase.from("users").upsert({ userId: session?.user?.id || "", firstName, lastName, email });
+      const { error } = await supabase.from("users").upsert({
+        userId: session?.user?.id || "",
+        firstName,
+        lastName,
+        email,
+        fcm_token: fcmToken,
+        role: "EMPLOYEE",
+        notify_approbations: false
+      });
       if (error) {
         setError(error.message);
         setLoading(false);
