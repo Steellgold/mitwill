@@ -1,10 +1,10 @@
-import React from "react";
+/* eslint-disable camelcase */
+import React, { useState } from "react";
 import type { ReactElement } from "react";
 import { AppBar } from "./src/lib/components/appbar";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeScreen } from "./src/pages/HomeScreen";
 import { CounterScreen } from "./src/pages/CounterScreen";
-import { CalendarScreen } from "./src/pages/CalendarScreen";
 import { LoginScreen } from "./src/pages/session/LoginScreen";
 import { SessionScreen } from "./src/pages/session/SessionScreen";
 import { RegisterScreen } from "./src/pages/session/RegisterScreen";
@@ -14,13 +14,17 @@ import { View } from "react-native";
 import { ActivityIndicator, Button, Text } from "react-native-paper";
 import { ApprovalsScreen } from "./src/pages/session/company/ApprovalsScreen";
 import type { Check } from "./src/lib/providers/session";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAsync } from "./src/lib/hooks/useAsync";
+import { PlanningBannerNotPlanned } from "./src/lib/components/plannings/ManagerBannerPlanned";
+import { PlanningsScreen } from "./src/pages/session/company/PlanningsScreen";
+import { CUPlanningScreen } from "./src/pages/session/company/manager/PlanningScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export type RootStackParamList = {
   HomeScreen: undefined;
   CounterScreen: undefined;
-  CalendarScreen: undefined;
 
   // Session screens
   LoginScreen: undefined;
@@ -28,13 +32,30 @@ export type RootStackParamList = {
   SessionScreen: undefined;
 
   CheckInfoScreen: Check;
+  PlanningScreen: {
+    date?: string;
+  };
 
   // Manage screens
   ApprovalsScreen: undefined;
+  CUPlanningScreen: {
+    date: string;
+    planningId?: string;
+  };
 };
 
 export const App = (): ReactElement => {
-  const { logoutLoading, appLoading, status, refresh, refreshing, session } = useSession();
+  const { logoutLoading, appLoading, status, refresh, refreshing, session, logout } = useSession();
+  const [notification_action, setNotification_action] = useState<string>("");
+
+  useAsync(async() => {
+    const notification_action = await AsyncStorage.getItem("notification_action");
+    if (notification_action) {
+      setNotification_action(notification_action);
+      await AsyncStorage.removeItem("notification_action");
+    }
+  }, []);
+
   if (appLoading || logoutLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 3, backgroundColor: "#fffbfe" }}>
@@ -67,28 +88,43 @@ export const App = (): ReactElement => {
           icon="refresh"
           loading={refreshing}
           style={{ marginTop: 10 }}
-        >
-          Rafraîchir
-        </Button>
+        >Rafraîchir</Button>
+
+        <Button
+          mode="contained"
+          onPress={() => {
+            if (logoutLoading) return;
+            void logout();
+          }}
+          loading={logoutLoading}
+          style={{ marginTop: 10 }}
+        >Se déconnecter</Button>
       </View>
     );
   }
 
   return (
     <Stack.Navigator
-      initialRouteName="HomeScreen"
+      // @ts-ignore
+      initialRouteName={
+        notification_action ? notification_action : session ? "HomeScreen" : "LoginScreen"
+      }
       screenOptions={{
         contentStyle: {
           backgroundColor: "#fffbfe"
         },
         animation: "none",
-        // @ts-ignore
-        header: (props) => <AppBar {...props} />
+        header: (props) => (
+          <>
+            {/* @ts-ignore */}
+            <AppBar {...props} />
+            {props.route.name == "HomeScreen" && <PlanningBannerNotPlanned />}
+          </>
+        )
       }}
     >
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="CounterScreen" component={CounterScreen} />
-      <Stack.Screen name="CalendarScreen" component={CalendarScreen} />
 
       {/* Session screens */}
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
@@ -96,9 +132,11 @@ export const App = (): ReactElement => {
       <Stack.Screen name="SessionScreen" component={SessionScreen} />
 
       <Stack.Screen name="CheckInfoScreen" component={CheckInfoScreen} />
+      <Stack.Screen name="PlanningScreen" component={PlanningsScreen} />
 
       {/* Manage screens */}
       <Stack.Screen name="ApprovalsScreen" component={ApprovalsScreen} />
+      <Stack.Screen name="CUPlanningScreen" component={CUPlanningScreen} />
     </Stack.Navigator>
   );
 };
