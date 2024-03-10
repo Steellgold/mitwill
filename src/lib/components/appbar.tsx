@@ -1,10 +1,9 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useState, type ReactElement } from "react";
+import { useState, type ReactElement, useEffect } from "react";
 import { Image, View } from "react-native";
 import { Appbar, Badge, Text, Tooltip } from "react-native-paper";
 import type { RootStackParamList } from "../../../App";
 import { useSession } from "../hooks/useSession";
-import { useAsync } from "../hooks/useAsync";
 import { supabase } from "../db/supabase";
 import { dayJS } from "../dayjs/day-js";
 
@@ -24,12 +23,16 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
   }
 
   const [waitingUsers, setWaitingUsers] = useState<number>(0);
-  useAsync(async() => {
-    if (role !== "MANAGER") return;
-    const { data, error } = await supabase
-      .rpc("count_users_waiting");
-    if (error) console.error("Error:", error);
-    else setWaitingUsers(data);
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    const interval = setInterval(async() => {
+      if (role !== "MANAGER") return;
+      const { data, error } = await supabase.rpc("count_users_waiting");
+      if (error) console.error("Error:", error);
+      else setWaitingUsers(data);
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [role]);
 
   return (
