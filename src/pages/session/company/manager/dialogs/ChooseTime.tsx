@@ -2,28 +2,25 @@ import { useState, type ReactElement } from "react";
 import { Button, Dialog, Portal, SegmentedButtons, Text } from "react-native-paper";
 import { View } from "react-native";
 import { TimePicker } from "react-native-paper-dates";
+import type { Dayjs } from "../../../../../lib/dayjs/day-js";
 import { dayJS } from "../../../../../lib/dayjs/day-js";
 
 type Props = {
   visible: boolean;
-
-  date: string;
-  isNightWeek: boolean;
-
   hideDialog: () => void;
   onDismiss: () => void;
-  onConfirm: ({ startH, startM, endH, endM }: { startH: number; startM: number; endH: number; endM: number }) => void;
+  onConfirm: ({ start, end }: { start: string; end: string }) => void;
+
+  forAllDays: boolean;
+  date?: Dayjs | null;
 };
 
-export const ChooseTimeDialog = ({ visible, hideDialog, onDismiss, onConfirm, date, isNightWeek }: Props): ReactElement => {
+export const ChooseTimeDialog = ({ visible, hideDialog, onDismiss, onConfirm, forAllDays = true, date = null }: Props): ReactElement => {
   const currentTime = dayJS();
-  const currentTimePlusTwo = currentTime.add(2, "hour");
+  const currentTimePlusTwo = currentTime.add(7, "hour").add(45, "minute");
 
-  const [startH, startHSet] = useState<number>(currentTime.hour());
-  const [startM, startMSet] = useState<number>(currentTime.minute());
-
-  const [endH, endHSet] = useState<number>(currentTimePlusTwo.hour());
-  const [endM, endMSet] = useState<number>(currentTimePlusTwo.minute());
+  const [start, setStart] = useState<string>(currentTime.format("HH:mm:00"));
+  const [end, setEnd] = useState<string>(currentTimePlusTwo.format("HH:mm:00"));
 
   const [error, setError] = useState<string>("");
   const [value, setValue] = useState<string>("start");
@@ -35,8 +32,12 @@ export const ChooseTimeDialog = ({ visible, hideDialog, onDismiss, onConfirm, da
         <Dialog.Title>Choisir la plage horaire</Dialog.Title>
 
         <Dialog.Content>
-          {isNightWeek ? (<Text>Vous avez choisi une semaine de nuit, l'heure de fin sera le lendemain de l'heure de début</Text>
-          ) : <Text>Choisissez l'heure de début et de fin pour le {dayJS(date).format("dddd DD/MM")}</Text>}
+          {forAllDays ? (
+            <Text>Les horaires choisis s'appliqueront à tous les jours de la semaine, qui sont affichés ci-dessous (en dehors du dialogue)</Text>
+          ) : (
+            <Text>Les horaires choisis s'appliqueront uniquement pour ce jour ({dayJS(date).format("dddd DD/MM")})</Text>
+          )}
+
           {error && <Text variant="bodySmall" style={{ color: "red" }}>{error}</Text>}
           <View style={{ marginBottom: 10 }} />
 
@@ -51,8 +52,8 @@ export const ChooseTimeDialog = ({ visible, hideDialog, onDismiss, onConfirm, da
           />
 
           <TimePicker
-            hours={value === "start" ? startH : endH}
-            minutes={value === "start" ? startM : endM}
+            hours={parseInt(start.split(":")[0])}
+            minutes={parseInt(start.split(":")[1])}
             inputType="keyboard"
             locale="fr"
             use24HourClock
@@ -60,23 +61,8 @@ export const ChooseTimeDialog = ({ visible, hideDialog, onDismiss, onConfirm, da
             onFocusInput={() => console.log("onFocusInput")}
             inputFontSize={38}
             onChange={(time) => {
-              if (value === "start") {
-                startHSet(time.hours);
-                startMSet(time.minutes);
-                if (endH < time.hours || (endH === time.hours && endM < time.minutes)) {
-                  setError("L'heure de début doit être avant l'heure de fin");
-                } else {
-                  setError("");
-                }
-              } else {
-                endHSet(time.hours);
-                endMSet(time.minutes);
-                if (time.hours < startH || (time.hours === startH && time.minutes < startM)) {
-                  setError("L'heure de fin doit être après l'heure de début");
-                } else {
-                  setError("");
-                }
-              }
+              if (value == "start") setStart(`${time.hours}:${time.minutes}:00`);
+              else setEnd(`${time.hours}:${time.minutes}:00`);
             }}
           />
 
@@ -88,9 +74,8 @@ export const ChooseTimeDialog = ({ visible, hideDialog, onDismiss, onConfirm, da
             setError("");
           }}>Annuler</Button>
           <Button
-            onPress={() => onConfirm({ startH, startM, endH, endM })}
-            disabled={error !== ""}
-          >Confirmer
+            onPress={() => onConfirm({ start, end })}
+            disabled={error !== ""}>Confirmer
           </Button>
         </Dialog.Actions>
       </Dialog>
