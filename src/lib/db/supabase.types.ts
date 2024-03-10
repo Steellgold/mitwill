@@ -46,6 +46,8 @@ export type Database = {
       };
       plannings: {
         Row: {
+          allEnd: string | null;
+          allStart: string | null;
           by: string;
           can_start_sunday: boolean | null;
           created_at: string;
@@ -53,7 +55,7 @@ export type Database = {
           friday_end: string | null;
           friday_start: string | null;
           from: string;
-          is_night: boolean;
+          hours_type: Database["public"]["Enums"]["HoursType"] | null;
           monday_end: string | null;
           monday_start: string | null;
           saturday_end: string | null;
@@ -68,8 +70,11 @@ export type Database = {
           uuid: string;
           wednesday_end: string | null;
           wednesday_start: string | null;
+          week_type: Database["public"]["Enums"]["WeekType"] | null;
         };
         Insert: {
+          allEnd?: string | null;
+          allStart?: string | null;
           by: string;
           can_start_sunday?: boolean | null;
           created_at?: string;
@@ -77,7 +82,7 @@ export type Database = {
           friday_end?: string | null;
           friday_start?: string | null;
           from: string;
-          is_night?: boolean;
+          hours_type?: Database["public"]["Enums"]["HoursType"] | null;
           monday_end?: string | null;
           monday_start?: string | null;
           saturday_end?: string | null;
@@ -92,8 +97,11 @@ export type Database = {
           uuid?: string;
           wednesday_end?: string | null;
           wednesday_start?: string | null;
+          week_type?: Database["public"]["Enums"]["WeekType"] | null;
         };
         Update: {
+          allEnd?: string | null;
+          allStart?: string | null;
           by?: string;
           can_start_sunday?: boolean | null;
           created_at?: string;
@@ -101,7 +109,7 @@ export type Database = {
           friday_end?: string | null;
           friday_start?: string | null;
           from?: string;
-          is_night?: boolean;
+          hours_type?: Database["public"]["Enums"]["HoursType"] | null;
           monday_end?: string | null;
           monday_start?: string | null;
           saturday_end?: string | null;
@@ -116,6 +124,7 @@ export type Database = {
           uuid?: string;
           wednesday_end?: string | null;
           wednesday_start?: string | null;
+          week_type?: Database["public"]["Enums"]["WeekType"] | null;
         };
         Relationships: [
           {
@@ -263,8 +272,10 @@ export type Database = {
       };
     };
     Enums: {
+      HoursType: "FOR_ALL" | "CUSTOM";
       Role: "EMPLOYEE" | "MANAGER";
       Status: "APPROVED" | "DECLINED" | "WAITING";
+      WeekType: "NIGHT" | "NORMAL";
     };
     CompositeTypes: {
       [_ in never]: never
