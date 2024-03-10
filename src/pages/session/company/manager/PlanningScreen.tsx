@@ -1,411 +1,232 @@
 /* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { useState, type ReactElement, useEffect } from "react";
+import { useState, type ReactElement } from "react";
 import { ScrollView, View } from "react-native";
-import { Button, Card, Checkbox, Chip, Divider, Menu, SegmentedButtons, Text, TouchableRipple } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import type { Dayjs } from "../../../../lib/dayjs/day-js";
 import { dayJS } from "../../../../lib/dayjs/day-js";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../../../App";
+import { Header } from "./PlanningScreen.Header";
+import { ActivityIndicator, Avatar, Button, Card, Chip, Divider, SegmentedButtons, Text, TouchableRipple } from "react-native-paper";
 import { ChooseEmployeesDialog } from "./dialogs/ChooseEmployees";
 import { ChooseTimeDialog } from "./dialogs/ChooseTime";
+import { useAsync } from "../../../../lib/hooks/useAsync";
 import { supabase } from "../../../../lib/db/supabase";
+import type { Database } from "../../../../lib/db/supabase.types";
 import { useSession } from "../../../../lib/hooks/useSession";
-import type { DayTimes } from "./types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "CUPlanningScreen">;
 
-/**
- * Why CU[...]Screen?
- * CU stands for Create/Update, it's a convention I use to name screens that are used to create or update a resource.
- */
-export const CUPlanningScreen = ({ navigation, route }: Props): ReactElement => {
-  const week = dayJS(route.params?.date).startOf("week");
+export const CUPlanningScreen = ({ route, navigation }: Props): ReactElement => {
   const planningId = route.params?.planningId;
+
   const { session } = useSession();
+  const week = dayJS(route.params?.date).startOf("week");
 
-  const [dayTimes, setDayTimes] = useState<DayTimes>({
-    monday: { start: undefined, end: undefined },
-    tuesday: { start: undefined, end: undefined },
-    wednesday: { start: undefined, end: undefined },
-    thursday: { start: undefined, end: undefined },
-    friday: { start: undefined, end: undefined },
-    saturday: { start: undefined, end: undefined, disabled: true }
-  });
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(planningId ? true : false);
 
-  const toggleSaturday = (): void => {
-    const { disabled } = dayTimes.saturday;
-    setDayTimes({
-      ...dayTimes,
-      saturday: {
-        ...dayTimes.saturday,
-        disabled: !disabled
+  const [weekType, setWeekType] = useState<Database["public"]["Enums"]["WeekType"]>("NORMAL");
+  const [hoursForAllDays, setHoursForAllDays] = useState<Database["public"]["Enums"]["HoursType"]>("FOR_ALL");
+
+  const [employees, setEmployees] = useState<string[]>([]);
+  const [employeesDialog, setEmployeesDialog] = useState(false);
+
+  const [saturday, setSaturday] = useState<boolean>(false);
+
+  const [sunday, setSunday] = useState<boolean>(false);
+
+  const [allStart, setAllStart] = useState<string | null>(dayJS().format("HH:mm:[00]"));
+  const [allEnd, setAllEnd] = useState<string | null>(dayJS().add(7, "hours").add(45, "minutes").format("HH:mm:[00]"));
+
+  const [dialogAllVisible, setDialogAllVisible] = useState(false);
+
+  useAsync(async() => {
+    if (planningId) {
+      setPageLoading(true);
+      const { data, error } = await supabase.from("plannings").select("*").eq("uuid", planningId).single();
+      if (error) return console.error("Error fetching planning", error);
+      if (!data) return console.error("No planning found");
+
+      setHoursForAllDays("FOR_ALL");
+      setAllStart(data.allStart || null);
+      setAllEnd(data.allEnd || null);
+      setWeekType(data.week_type || "NORMAL");
+      setEmployees(data.for);
+
+      setPageLoading(false);
+    }
+  }, [planningId]);
+
+  if (pageLoading) {
+    return (
+      <>
+        <Header week={week} refetch={() => console.log("refetch")} employeesCount={0} />
+        <View style={{ padding: 15, position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator animating={true} color="#fd7e46" size="large" />
+          <Text style={{ marginTop: 20 }}>Chargement du planning...</Text>
+        </View>
+      </>
+    );
+  }
+
+  const handleSave = async(): Promise<void> => {
+    if (planningId) return console.error("Editing planning is not yet supported");
+    setLoading(true);
+
+    const { status, error } = await supabase.from("plannings").insert(
+      {
+        by: session?.user?.id || "unknown",
+        for: employees,
+        from: week.format("YYYY-MM-DD"),
+        to: week.add(4, "days").format("YYYY-MM-DD"),
+        allStart,
+        allEnd,
+        can_start_sunday: sunday,
+        week_type: weekType,
+        hours_type: hoursForAllDays ? "FOR_ALL" : "CUSTOM"
       }
-    });
+    );
 
-    if (!disabled) {
-      setDayTimes({
-        ...dayTimes,
-        saturday: {
-          start: undefined,
-          end: undefined,
-          disabled: true
-        }
-      });
+    if (error) return console.error("Error saving planning", error);
+    if (status === 201) {
+      setLoading(false);
+      navigation.navigate("PlanningScreen", { refresh: true });
     }
   };
 
-  const [users, setUsers] = useState<string[]>([]);
+  const toggleWeek = (): void => {
+    setSaturday(false);
+    setSunday(false);
+    setWeekType("NORMAL");
+  };
 
-  const [chooseDialogOpen, setChooseDialogOpen] = useState(false);
-  const [chooseDialogOpenPeriod, setChooseDialogOpenPeriod] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<Weekday | null>(null);
-
-  const [weekType, setWeekType] = useState<"normal" | "night">("normal");
-
-  const [selectedMenu, setSelectedMenu] = useState<Weekday | null>(null);
-  const [clipboard, setClipboard] = useState<{ start: string; end: string } | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchPlanningData = async(): Promise<void> => {
-      if (!planningId) return;
-
-      const { data, error } = await supabase
-        .from("plannings")
-        .select("*")
-        .eq("uuid", planningId)
-        .single();
-
-      if (error) {
-        console.error("Erreur lors du chargement du planning", error);
-        return;
-      }
-
-      const removeSeconds = (time: string | null): string | undefined => {
-        if (!time) return undefined;
-        return time.split(":").slice(0, 2).join(":");
-      };
-
-      if (data) {
-        setDayTimes({
-          monday: { start: removeSeconds(data.monday_start) || undefined, end: removeSeconds(data.monday_end) || undefined },
-          tuesday: { start: removeSeconds(data.tuesday_start) || undefined, end: removeSeconds(data.tuesday_end) || undefined },
-          wednesday: { start: removeSeconds(data.wednesday_start) || undefined, end: removeSeconds(data.wednesday_end) || undefined },
-          thursday: { start: removeSeconds(data.thursday_start) || undefined, end: removeSeconds(data.thursday_end) || undefined },
-          friday: { start: removeSeconds(data.friday_start) || undefined, end: removeSeconds(data.friday_end) || undefined },
-          saturday: {
-            start: removeSeconds(data.saturday_start) || undefined,
-            end: removeSeconds(data.saturday_end) || undefined,
-            disabled: !data.saturday_start || !data.saturday_end
-          }
-        });
-
-        setUsers(data.for);
-      }
-    };
-
-    void fetchPlanningData();
-  }, [planningId]);
-
-  const handleSubmission = async(): Promise<void> => {
-    if (!session) return;
-    setLoading(true);
-    if (planningId) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      await supabase.from("plannings").update({
-        by: session.user.id,
-        for: users,
-        from: week.startOf("week").format("YYYY-MM-DD"),
-        to: week.endOf("week").format("YYYY-MM-DD"),
-        monday_start: dayTimes.monday.start,
-        monday_end: dayTimes.monday.end,
-        tuesday_start: dayTimes.tuesday.start,
-        tuesday_end: dayTimes.tuesday.end,
-        wednesday_start: dayTimes.wednesday.start,
-        wednesday_end: dayTimes.wednesday.end,
-        thursday_start: dayTimes.thursday.start,
-        thursday_end: dayTimes.thursday.end,
-        friday_start: dayTimes.friday.start,
-        friday_end: dayTimes.friday.end,
-        saturday_start: dayTimes.saturday.start,
-        saturday_end: dayTimes.saturday.end,
-        is_night: weekType === "night"
-      }).eq("uuid", planningId)
-        .then(() => setLoading(false));
-    } else {
-      await supabase.from("plannings").insert({
-        by: session.user.id,
-        for: users,
-        from: week.startOf("week").format("YYYY-MM-DD"),
-        to: week.endOf("week").format("YYYY-MM-DD"),
-        monday_start: dayTimes.monday.start,
-        monday_end: dayTimes.monday.end,
-        tuesday_start: dayTimes.tuesday.start,
-        tuesday_end: dayTimes.tuesday.end,
-        wednesday_start: dayTimes.wednesday.start,
-        wednesday_end: dayTimes.wednesday.end,
-        thursday_start: dayTimes.thursday.start,
-        thursday_end: dayTimes.thursday.end,
-        friday_start: dayTimes.friday.start,
-        friday_end: dayTimes.friday.end,
-        saturday_start: dayTimes.saturday.start,
-        saturday_end: dayTimes.saturday.end,
-        is_night: weekType === "night"
-      }).then(() => setLoading(false));
-    }
-
-    navigation.navigate("PlanningScreen", { date: dayJS().startOf("week").format("YYYY-MM-DD") });
+  const toggleNightWeek = (): void => {
+    setSunday(false);
+    setSaturday(false);
+    setWeekType("NIGHT");
   };
 
   return (
     <SafeAreaProvider>
       <ScrollView>
-        <View style={{ padding: 15 }}>
-          <Text variant="bodyLarge">Semaine du {week.format("DD/MM")} au {week.add(4, "days").format("DD/MM/YYYY")}</Text>
-          <Text variant="bodySmall" style={{ marginTop: 2 }}>Actuellement {users.length} employé(s) sélectionné(s)</Text>
-          <Divider style={{ marginTop: 10 }} />
-        </View>
+        <Header week={week} refetch={() => console.log("refetch")} employeesCount={employees.length} />
 
-        <View style={{ padding: 15 }}>
+        <View style={{ padding: 15, gap: 10 }}>
           <SegmentedButtons
             value={weekType}
-            style={{ marginBottom: 15 }}
-            // @ts-ignore
-            onValueChange={(value: "normal" | "night") => setWeekType(value)}
+            onValueChange={(value) => value === "NORMAL" ? toggleWeek() : toggleNightWeek()}
             buttons={[
-              { value: "normal", label: "Semaine normale", icon: "calendar" },
-              { value: "night", label: "Semaine de nuit", icon: "moon-waning-crescent" }
+              { label: "Semaine normale", value: "NORMAL", icon: "white-balance-sunny" },
+              { label: "Semaine de nuit", value: "NIGHT", icon: "moon-waning-crescent" }
             ]}
           />
 
-          <ChooseTimeDialog
-            date={selectedDay ? addDaysBasedOnWeekday(selectedDay, week).format("YYYY-MM-DD") : ""}
-            isNightWeek={false}
-            visible={chooseDialogOpenPeriod}
-            hideDialog={() => setChooseDialogOpenPeriod(false)}
-            onDismiss={() => setChooseDialogOpenPeriod(false)}
-            onConfirm={({ startH, startM, endH, endM }) => {
-              setDayTimes({
-                ...dayTimes,
-                [selectedDay as Weekday]: {
-                  start: `${startH.toString().padStart(2, "0")}:${startM.toString().padStart(2, "0")}`,
-                  end: `${endH.toString().padStart(2, "0")}:${endM.toString().padStart(2, "0")}`
-                }
-              });
-              setChooseDialogOpenPeriod(false);
-            }} />
-
-          {dayTimes && Object.keys(dayTimes).map((i) => {
-            const day = addDaysBasedOnWeekday(i as Weekday, week);
-            if (dayTimes.saturday.disabled && i === "saturday") return <></>;
-
-            return (
-              <Menu
-                anchor={
-                  <>
-                    <Card key={i} style={{ marginBottom: 10 }}>
-                      <TouchableRipple borderless style={{ borderRadius: 10 }} onPress={() => {
-                        setSelectedDay(i as Weekday);
-                        setChooseDialogOpenPeriod(true);
-                      }} onLongPress={() => setSelectedMenu(i as Weekday)}>
-                        <>
-                          <Card.Title title={day.format("dddd").charAt(0).toUpperCase() + day.format("dddd").slice(1)} style={{ marginBottom: 10 }} />
-                          <Card.Content style={{ marginBottom: 10, marginTop: -15 }}>
-                            {dayTimes[i as Weekday].start === undefined || dayTimes[i as Weekday].end === undefined ? (
-                              <Text variant="bodySmall">Cliquez pour définir les heures</Text>
-                            ) : (
-                              <>
-                                {weekType === "night" ? (
-                                  <>
-                                    {i === "saturday" ? (
-                                      <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
-                                        <Text>Nuit du</Text>
-                                        <Chip icon={"calendar"} compact>{day.add(-1, "day").format("ddd DD/MM")}</Chip>
-                                        <Text>se termine à</Text>
-                                        <Chip icon={"clock"} compact>{dayTimes[i as Weekday].end}</Chip>
-                                      </View>
-                                    ) : (
-                                      <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                                        <Text>Début de journée à</Text>
-                                        <Chip compact>{dayTimes[i as Weekday].start}</Chip>
-                                        <Text>et se termine le lendemain à</Text>
-                                        <Chip compact>{dayTimes[i as Weekday].end}</Chip>
-                                      </View>
-                                    )}
-                                  </>
-                                ) : (
-                                  <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                                    <Text>Début de journée à</Text>
-                                    <Chip compact>{dayTimes[i as Weekday].start}</Chip>
-                                    <Text>et se termine à</Text>
-                                    <Chip compact>{dayTimes[i as Weekday].end}</Chip>
-                                  </View>
-                                )}
-                              </>
-                            )}
-                          </Card.Content>
-                        </>
-                      </TouchableRipple>
-                    </Card>
-                  </>
-                }
-                visible={selectedMenu === i}
-                onDismiss={() => setSelectedMenu(null)}
-              >
-                <Menu.Item
-                  onPress={() => {
-                    const { start, end } = dayTimes[i as Weekday];
-                    if (!start || !end) return;
-
-                    const newDayTimes = Object.keys(dayTimes).reduce((acc, day) => {
-                      if (day === "saturday" && dayTimes.saturday.disabled) {
-                        acc[day] = dayTimes[day];
-                      } else {
-                        // @ts-ignore
-                        acc[day] = { start, end };
-                      }
-                      return acc;
-                    }, {} as DayTimes);
-
-                    setDayTimes(newDayTimes);
-                    setSelectedMenu(null);
-                  }}
-                  title="Appliquer à tous"
-                  disabled={
-                    dayTimes[i as Weekday].start === undefined || dayTimes[i as Weekday].end === undefined
-                    || (i === "saturday" && dayTimes.saturday.disabled)
-                  }
-                  leadingIcon={"calendar-multiselect"} />
-
-                <Menu.Item
-                  onPress={() => {
-                    setDayTimes({
-                      ...dayTimes,
-                      [i as Weekday]: {
-                        start: undefined,
-                        end: undefined
-                      }
-                    });
-                    setSelectedMenu(null);
-                  }}
-                  title="Réinitialiser"
-                  disabled={
-                    dayTimes[i as Weekday].start === undefined || dayTimes[i as Weekday].end === undefined
-                    || (i === "saturday" && dayTimes.saturday.disabled)
-                  }
-                  leadingIcon={"calendar-remove"} />
-
-                <Menu.Item
-                  onPress={() => {
-                    if (dayTimes[i as Weekday].start === undefined || dayTimes[i as Weekday].end === undefined) return;
-                    const { start, end } = dayTimes[i as Weekday];
-                    if (!start || !end) return;
-                    setClipboard({ start, end });
-                    setSelectedMenu(null);
-                  }}
-                  title="Copier"
-                  disabled={
-                    dayTimes[i as Weekday].start === undefined || dayTimes[i as Weekday].end === undefined
-                    || (i === "saturday" && dayTimes.saturday.disabled)
-                  }
-                  leadingIcon={"content-copy"} />
-
-                <Menu.Item
-                  onPress={() => {
-                    if (!clipboard) return;
-                    setDayTimes({
-                      ...dayTimes,
-                      [i as Weekday]: {
-                        start: clipboard.start,
-                        end: clipboard.end
-                      }
-                    });
-                    setSelectedMenu(null);
-                  }}
-                  title="Coller"
-                  disabled={
-                    (i === "saturday" && dayTimes.saturday.disabled)
-                  }
-                  leadingIcon={"content-paste"} />
-              </Menu>
-
-            );
-          })}
-
-          <Checkbox.Item
-            label="Ajouter le samedi"
-            status={dayTimes.saturday.disabled ? "unchecked" : "checked"}
-            onPress={toggleSaturday}
+          <SegmentedButtons
+            value={hoursForAllDays ? "FOR_ALL" : "CUSTOM"}
+            onValueChange={(value) => setHoursForAllDays(value as Database["public"]["Enums"]["HoursType"])}
+            buttons={[
+              { label: "Mêmes horraires", value: "FOR_ALL", icon: hoursForAllDays ? "check" : "" },
+              { label: "Horraires personnalisés", value: "CUSTOM", icon: hoursForAllDays ? "" : "check" }
+            ]}
           />
 
-          <Divider style={{ marginTop: 10 }} />
+          <ChooseEmployeesDialog
+            visible={employeesDialog}
+            defaultSelectedUsersIds={employees}
+            hideDialog={() => setEmployeesDialog(false)}
+            onDismiss={() => console.log("dismiss")}
+            onConfirm={(users) => {
+              setEmployees(users.map((u) => u.userId.toString()));
+              setEmployeesDialog(false);
+            }}
+          />
+
+          <Button mode="contained-tonal" icon="account-group" onPress={() => setEmployeesDialog(true)}>
+            Choisir les employé(e)s concerné(e)s
+          </Button>
+
+          {weekType === "NIGHT"
+            ? <Button mode="contained-tonal" icon="calendar-weekend" onPress={() => setSunday(!sunday)}>
+              {!sunday ? "Commencer le dimanche" : "Plutôt commencer le lundi"}
+            </Button>
+            : <Button mode="contained-tonal" icon="calendar-week-begin" onPress={() => setSaturday(!saturday)}>{
+              !saturday ? "Ajouter le samedi" : "Laissons le week-end tranquille"
+            }</Button>
+          }
+          <Divider />
+        </View>
+
+        <View style={{ padding: 15, paddingTop: 0 }}>
+          {hoursForAllDays ? (
+            <Card>
+              <ChooseTimeDialog
+                visible={dialogAllVisible}
+                hideDialog={() => setDialogAllVisible(false)}
+                onDismiss={() => setDialogAllVisible(false)}
+                onConfirm={(data) => {
+                  setAllStart(data.start);
+                  setAllEnd(data.end);
+                  setDialogAllVisible(false);
+                }}
+                forAllDays
+              />
+
+              <TouchableRipple borderless onPress={() => setDialogAllVisible(true)} style={{ borderRadius: 10 }}>
+                <>
+                  <Card.Title title="Réglages des horraires (tous les jours)" />
+                  <Card.Content style={{ marginBottom: 15 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                      <Text style={{ marginRight: "auto" }}>{sunday ? "Dim" : "Lun"} - {saturday ? "Sam." : "Ven."}</Text>
+
+                      <Chip icon="clock" selected>{fixTime(allStart)}</Chip>
+                      <Avatar.Icon icon="arrow-right" size={32} style={{ backgroundColor: "transparent" }} color="#474648" />
+                      <Chip icon="clock" selected>{fixTime(allEnd)}</Chip>
+                    </View>
+
+                    {saturday && <Text style={{ marginTop: 15 }} variant="bodySmall">Le samedi est inclus</Text>}
+                    {sunday && <Text style={{ marginTop: 15 }} variant="bodySmall">Le dimanche est inclus</Text>}
+                    <Text style={{ marginTop: saturday || sunday ? 0 : 15 }} variant="bodySmall">
+                      Pour modifier les horraires, appuyez sur la carte
+                    </Text>
+                  </Card.Content>
+                </>
+              </TouchableRipple>
+            </Card>
+          ) : (
+            <Text variant="bodySmall">
+              Encore en développement
+            </Text>
+          )}
+        </View>
+
+
+        <View style={{ padding: 15, paddingTop: 0 }}>
+          <Divider style={{ marginBottom: 15 }} />
 
           <Button
             mode="contained"
+            icon={!planningId ? "calendar-plus" : "calendar-edit"}
             loading={loading}
             disabled={
               loading
-              || users.length === 0
-              || Object.keys(dayTimes).some((i) => {
-                if (i === "saturday" && dayTimes.saturday.disabled) return false;
-                return dayTimes[i as Weekday].start === undefined || dayTimes[i as Weekday].end === undefined;
-              })
+              || employees.length === 0
+              || (hoursForAllDays ? !allStart || !allEnd : false)
+              || !hoursForAllDays
             }
-            onPress={handleSubmission}
-            style={{ marginTop: 10 }}
-            icon="calendar-plus"
+            onPress={() => handleSave()}
           >
-            {planningId ? "Mettre à jour le planning" : "Créer le planning"}
+            {!planningId ? "Créer le planning" : "Sauvegarder les modifications"}
           </Button>
-
-          <ChooseEmployeesDialog
-            visible={chooseDialogOpen}
-            hideDialog={() => setChooseDialogOpen(false)}
-            onDismiss={() => setChooseDialogOpen(false)}
-            defaultSelectedUsersIds={users || []}
-            onConfirm={(users) => {
-              setUsers(users.map((u) => u.userId));
-              setChooseDialogOpen(false);
-            }} />
-
-          <Button mode="contained-tonal" onPress={() => setChooseDialogOpen(true)} style={{ marginTop: 10 }} icon="account-multiple-plus">
-            {users.length > 0
-              ? "Modifier les employés sélectionnés"
-              : "Définir qui est concerné"}
-          </Button>
-
-          <Button mode="contained-tonal" onPress={() => console.log("clicked")} style={{ marginTop: 10 }} icon="calendar-multiple" disabled>
-            Copier un planning existant
-          </Button>
-
-          <Divider style={{ marginTop: 10 }} />
-        </View>
-
-        <View style={{ padding: 15 }}>
-          <Text style={{ fontWeight: "bold" }}>Note:</Text>
-          <Text>- Les cartes sont cliquables, une fois cliquées, elles afficheront un sélecteur de temps pour le début et la fin de la journée.</Text>
-          <Text>- Vous pouvez laisser appuyé sur une carte pour avoir des options supplémentaires (appliquer à tous, etc)</Text>
         </View>
       </ScrollView>
     </SafeAreaProvider>
   );
 };
 
-type Weekday = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday";
+const fixTime = (time: string | null): string => {
+  if (!time) return "00:00";
 
-const addDaysBasedOnWeekday = (weekday: Weekday, baseDay: Dayjs): Dayjs => {
-  const currentDay = baseDay;
-  const daysToAdd: Record<Weekday, number> = {
-    monday: 0,
-    tuesday: 1,
-    wednesday: 2,
-    thursday: 3,
-    friday: 4,
-    saturday: 5
-  };
-
-  const days = daysToAdd[weekday];
-  return currentDay.add(days, "day");
+  const [h, m] = time.split(":");
+  return `${h.length === 1 ? `0${h}` : h}:${m.length === 1 ? `${m}0` : m}`;
 };
