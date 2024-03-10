@@ -47,6 +47,7 @@ export type Database = {
       plannings: {
         Row: {
           by: string;
+          can_start_sunday: boolean | null;
           created_at: string;
           for: string[];
           friday_end: string | null;
@@ -70,6 +71,7 @@ export type Database = {
         };
         Insert: {
           by: string;
+          can_start_sunday?: boolean | null;
           created_at?: string;
           for: string[];
           friday_end?: string | null;
@@ -93,6 +95,7 @@ export type Database = {
         };
         Update: {
           by?: string;
+          can_start_sunday?: boolean | null;
           created_at?: string;
           for?: string[];
           friday_end?: string | null;
