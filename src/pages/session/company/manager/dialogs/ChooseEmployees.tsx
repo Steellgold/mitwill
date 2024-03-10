@@ -41,6 +41,7 @@ export const ChooseEmployeesDialog = ({ visible, hideDialog, onDismiss, onConfir
     const { data, error } = await supabase.from("users").select("*");
     if (error) return console.error("Error fetching users", error);
     setUsers(data || []);
+    setFilteredUsers(data || []);
 
     if (defaultSelectedUsersIds) {
       const selected = data?.filter((u) => defaultSelectedUsersIds.includes(u.userId.toString())) || [];
@@ -63,6 +64,7 @@ export const ChooseEmployeesDialog = ({ visible, hideDialog, onDismiss, onConfir
         <Dialog.Title>Choisir des employés</Dialog.Title>
         <Dialog.Content>
           <Text variant="bodySmall">Sélectionnez les employés qui travailleront cette semaine</Text>
+          {selectedUsers.length === 0 && <Text variant="bodySmall" style={{ color: "#fd4646" }}>Aucun employé sélectionné</Text>}
           <View style={{ marginVertical: 4 }} />
 
           <Searchbar
@@ -91,8 +93,14 @@ export const ChooseEmployeesDialog = ({ visible, hideDialog, onDismiss, onConfir
           </ScrollView>
         </Dialog.Content>
         <Dialog.Actions>
-          <Button onPress={hideDialog}>Annuler</Button>
-          <Button onPress={() => onConfirm(selectedUsers)}>Confirmer</Button>
+          <Button onPress={() => {
+            hideDialog();
+            setSearchQuery("");
+          }}>Annuler</Button>
+          <Button disabled={selectedUsers.length === 0} onPress={() => {
+            onConfirm(selectedUsers);
+            setSearchQuery("");
+          }}>Confirmer</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>
