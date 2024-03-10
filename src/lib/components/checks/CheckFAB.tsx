@@ -33,6 +33,8 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
   const [fabGroupOpen, setFabGroupOpen] = useState(false);
   const [dialogPauseVisible, setDialogPauseVisible] = useState(false);
 
+  const isSunday = dayJS().day() === 0;
+
   if (activeCheck) {
     return (
       <Portal>
@@ -108,7 +110,12 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
         visible={visible}
         icon="clock-outline"
         label="Démarrer ma journée"
-        disabled={!session || activeCheck || checks.some((check) => check.date === dayJS().format("YYYY-MM-DD"))}
+        disabled={
+          !session
+          || activeCheck
+          || checks.some((check) => check.date === dayJS().format("YYYY-MM-DD"))
+          || isSunday
+        }
         onPress={() => {
           console.log("FAB pressed", session?.user.user_metadata);
           startCheck()
