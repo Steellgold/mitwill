@@ -34,6 +34,7 @@ export type RootStackParamList = {
   CheckInfoScreen: Check;
   PlanningScreen: {
     date?: string;
+    refresh?: boolean;
   };
 
   // Manage screens
