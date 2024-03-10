@@ -15,14 +15,10 @@ import type { RootStackParamList } from "../../../../App";
 type Planning = Database["public"]["Tables"]["plannings"]["Row"];
 type Props = NativeStackScreenProps<RootStackParamList, "PlanningScreen">;
 
-export const PlanningsScreen = ({ navigation, route }: Props): ReactElement => {
+export const PlanningsScreen = ({ navigation }: Props): ReactElement => {
   const { session, role } = useSession();
   const [plannings, setPlannings] = useState<Planning[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const today = dayJS(
-    route.params.date || dayJS().startOf("week").format("YYYY-MM-DD")
-  ).startOf("week").format("YYYY-MM-DD");
 
   useAsync(async() => {
     setLoading(true);
@@ -31,10 +27,9 @@ export const PlanningsScreen = ({ navigation, route }: Props): ReactElement => {
       const { data, error } = await supabase
         .from("plannings")
         .select("*")
-        .contains("for", [session.user.id])
-        .gte("from", today)
-        .order("from", { ascending: true });
+        .contains("for", [session.user.id]);
       if (error) return console.error("Error fetching plannings", error);
+      console.log("Plannings", data);
       setPlannings(data || []);
       setLoading(false);
     }
@@ -125,8 +120,9 @@ const PlanningFAB = (): ReactElement => {
         <Dialog.Icon icon="calendar-search" />
         <Dialog.Title style={{ textAlign: "center" }}>Choisissez une semaine</Dialog.Title>
         <Dialog.Content>
-          <Text variant="bodyMedium" style={{ marginBottom: 60 }}
-          >Choisissez la semaine à consulter, vous pourrez consulter les horraires de travail pour chaque jour et les employés associés</Text>
+          <Text variant="bodyMedium" style={{ marginBottom: 60 }}>
+            Choisissez la semaine à consulter, vous pourrez consulter les horraires de travail pour chaque jour et les employés associés
+          </Text>
 
           <DatePickerInput
             locale="fr"
