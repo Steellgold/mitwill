@@ -14,6 +14,7 @@ import { useAsync } from "../../../../lib/hooks/useAsync";
 import { supabase } from "../../../../lib/db/supabase";
 import type { Database } from "../../../../lib/db/supabase.types";
 import { useSession } from "../../../../lib/hooks/useSession";
+import { fixTime } from "../../../../lib/time";
 
 type Props = NativeStackScreenProps<RootStackParamList, "CUPlanningScreen">;
 
@@ -222,11 +223,4 @@ export const CUPlanningScreen = ({ route, navigation }: Props): ReactElement => 
       </ScrollView>
     </SafeAreaProvider>
   );
-};
-
-const fixTime = (time: string | null): string => {
-  if (!time) return "00:00";
-
-  const [h, m] = time.split(":");
-  return `${h.length === 1 ? `0${h}` : h}:${m.length === 1 ? `${m}0` : m}`;
 };
