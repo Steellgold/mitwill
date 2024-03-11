@@ -4,7 +4,7 @@ import { calculateDiff, majdate } from "../../dayjs/day-js.utils";
 import { dayJS } from "../../dayjs/day-js";
 import { useSession } from "../../hooks/useSession";
 import { NoCheckCard } from "./NoCheckCard";
-import type { Diff } from "../../dayjs/day-js.types";
+import type { SimpleDiff } from "../../dayjs/day-js.types";
 
 export const CheckCard = (): ReactElement => {
   const { session, activeCheck, checks } = useSession();
@@ -17,11 +17,7 @@ export const CheckCard = (): ReactElement => {
 
   const [showSeconds, setShowSeconds] = useState(false);
 
-  const [time, setTime] = useState<Diff>({
-    days: "0", hours: "0", minutes: "0", seconds: "0",
-    nbrNights: { hours: "0", minutes: "0" },
-    nbrSupps: { hours: "0", minutes: "0" }
-  });
+  const [time, setTime] = useState<SimpleDiff>({ days: "0", hours: "0", minutes: "0", seconds: "0" });
 
   const checkStartedYesterday = dayJS(activeCheck.start).dayOfYear() < dayJS().dayOfYear();
 
