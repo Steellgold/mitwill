@@ -4,7 +4,7 @@ import { ActivityIndicator, Avatar, Card, Divider, Searchbar, Text, TouchableRip
 import { useAsync } from "../../../../../lib/hooks/useAsync";
 import { supabase } from "../../../../../lib/db/supabase";
 import type { Database } from "../../../../../lib/db/supabase.types";
-import { getAvatar } from "../../../../../lib/dicebear";
+import { avatarTime, getAvatar } from "../../../../../lib/dicebear";
 
 type User = Database["public"]["Tables"]["users"]["Row"];
 
@@ -54,7 +54,7 @@ export const EmployeesScreen = (): ReactElement => {
                   <Text>{user.firstName} {user.lastName}</Text>
                   <Text variant="bodySmall">{user.email}</Text>
                 </View>
-                <Avatar.Image size={50} source={{ uri: user.avatar || getAvatar(user.firstName || "", user.lastName || "") }} />
+                <Avatar.Image size={50} source={{ uri: avatarTime(user.avatar) || getAvatar(user.firstName || "", user.lastName || "") }} />
               </View>
             </>
           </TouchableRipple>
