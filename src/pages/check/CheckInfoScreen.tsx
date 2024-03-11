@@ -15,7 +15,8 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
     return <View />;
   }
 
-  const duration: DiffWithWT = calculate(route.params);
+  const check = route.params.check;
+  const duration: DiffWithWT = calculate(route.params.check);
 
   return (
     <SafeAreaView>
@@ -25,7 +26,9 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
             <Card.Title
               style={{ marginTop: 10 }}
               title="Pointage du jour"
-              subtitle="Données détaillées par rapport à votre pointage et votre temps de travail."
+              subtitle={route.params.isManager
+                ? "Données détaillées par rapport au pointage et au temps de travail de l'employé."
+                : "Données détaillées par rapport à votre pointage et votre temps de travail."}
               subtitleNumberOfLines={2}
               subtitleStyle={{ marginTop: -5 }}
             />
@@ -37,13 +40,13 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
                 <Card style={{ flex: 1 }}>
                   <Card.Title
                     title="Début de journée"
-                    subtitle={dayJS(route.params.start).format("HH[h]mm[m]")} subtitleStyle={{ marginTop: -5 }}/>
+                    subtitle={dayJS(check.start).format("HH[h]mm[m]")} subtitleStyle={{ marginTop: -5 }}/>
                 </Card>
 
                 <Card style={{ flex: 1 }}>
                   <Card.Title
                     title="Fin de journée"
-                    subtitle={dayJS(route.params.end).format("HH[h]mm[m]")} subtitleStyle={{ marginTop: -5 }}/>
+                    subtitle={dayJS(check.end).format("HH[h]mm[m]")} subtitleStyle={{ marginTop: -5 }}/>
                 </Card>
               </View>
 
@@ -60,7 +63,7 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
                   <Card.Title
                     title="Pause"
                     subtitle={
-                      route.params.pauseTaken
+                      check.pauseTaken
                         ? "45 mins"
                         : "20 mins (oblg.)"
                     } subtitleStyle={{ marginTop: -5 }}/>
@@ -99,7 +102,7 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
 
               <Card>
                 <Card.Title
-                  title="Temps de travail (sans pause)"
+                  title="Temps de travail (sans la pause)"
                   subtitle={`${duration.workTime.hours} heures et ${duration.workTime.minutes} mins`}
                   subtitleStyle={{ marginTop: -5 }}
                 />
@@ -125,7 +128,7 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
 
           <Text style={styles.bold}>Note:</Text>
           <Text>- Les heures de nuit sont calculées entre 21h30 et 6h00.</Text>
-          <Text>- Les heures supplémentaires sont calculées au-delà de 7h{route.params.pauseTaken ? "45" : "20"} de travail.</Text>
+          <Text>- Les heures supplémentaires sont calculées au-delà de 7h{check.pauseTaken ? "45" : "20"} de travail.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
