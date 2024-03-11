@@ -21,8 +21,11 @@ export const HomeScreen = ({ navigation }: Props): ReactElement => {
       <ScrollView refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={() => {
           setRefreshing(true);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           refresh?.()
+            // @ts-ignore
             .then(() => setRefreshing(false))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             .catch(() => setRefreshing(false));
         }} />
       }>
