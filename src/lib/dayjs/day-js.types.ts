@@ -10,6 +10,13 @@ export type Diff = {
   };
 };
 
+export type SimpleDiff = {
+  days: string;
+  hours: string;
+  minutes: string;
+  seconds: string;
+};
+
 export type DiffWithWT = {
   days: string;
   hours: string;
