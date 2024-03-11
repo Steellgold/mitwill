@@ -19,7 +19,7 @@ export const Header = ({ week, refetch, employeesCount = 0 }: HeaderProps): Reac
           <Text variant="bodyLarge">Semaine du {week.format("DD/MM")} au {week.add(4, "days").format("DD/MM/YYYY")}</Text>
           <Text variant="bodySmall" style={{ marginTop: 2 }}>Actuellement {employeesCount} employé(s) sélectionné(s)</Text>
         </View>
-        <IconButton icon={"calendar-refresh-outline"} onPress={refetch} />
+        <IconButton icon={"calendar-refresh-outline"} onPress={refetch} disabled />
       </View>
       <Divider style={{ marginTop: 10 }} />
     </View>
