@@ -125,11 +125,11 @@ export const CUPlanningScreen = ({ route, navigation }: Props): ReactElement => 
           />
 
           <SegmentedButtons
-            value={hoursForAllDays ? "FOR_ALL" : "CUSTOM"}
-            onValueChange={(value) => setHoursForAllDays(value as Database["public"]["Enums"]["HoursType"])}
+            value={hoursForAllDays}
+            onValueChange={(value) => setHoursForAllDays(value === "FOR_ALL" ? "FOR_ALL" : "CUSTOM")}
             buttons={[
-              { label: "Mêmes horraires", value: "FOR_ALL", icon: hoursForAllDays ? "check" : "" },
-              { label: "Horraires personnalisés", value: "CUSTOM", icon: hoursForAllDays ? "" : "check" }
+              { label: "Mêmes horraires", value: "FOR_ALL" },
+              { label: "Horraires différents", value: "CUSTOM" }
             ]}
           />
 
@@ -160,7 +160,7 @@ export const CUPlanningScreen = ({ route, navigation }: Props): ReactElement => 
         </View>
 
         <View style={{ padding: 15, paddingTop: 0 }}>
-          {hoursForAllDays ? (
+          {hoursForAllDays == "FOR_ALL" ? (
             <Card>
               <ChooseTimeDialog
                 visible={dialogAllVisible}
@@ -196,9 +196,12 @@ export const CUPlanningScreen = ({ route, navigation }: Props): ReactElement => 
               </TouchableRipple>
             </Card>
           ) : (
-            <Text variant="bodySmall">
-              Encore en développement
-            </Text>
+            <>
+              <Text variant="bodySmall">WIP</Text>
+              <Text variant="bodySmall">- Si nuit: Permettre de commencer le dimanche (finir le vendredi)</Text>
+              <Text variant="bodySmall">- Si jour: Permettre d'ajouter le samedi</Text>
+              <Text variant="bodySmall">- Heure start = (J-1) - Heure end = (J+1)</Text>
+            </>
           )}
         </View>
 
