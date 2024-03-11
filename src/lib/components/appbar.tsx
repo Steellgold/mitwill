@@ -5,7 +5,6 @@ import { Appbar, Badge, Text, Tooltip } from "react-native-paper";
 import type { RootStackParamList } from "../../../App";
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../db/supabase";
-import { dayJS } from "../dayjs/day-js";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -54,11 +53,11 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
       {/* Todo, for now the app has only one little app-in-app */}
       {/* <Appbar.Action icon="apps" onPress={() => navigation.push("HomeScreen")} disabled={route.name === "HomeScreen"} /> */}
 
-      <Tooltip title="Plannings" leaveTouchDelay={200} enterTouchDelay={200}>
+      {/* <Tooltip title="Plannings" leaveTouchDelay={200} enterTouchDelay={200}>
         <Appbar.Action icon="calendar-month" onPress={() => navigation.push("PlanningScreen", {
           date: dayJS().format("YYYY-MM-DD")
         })} disabled={route.name === "PlanningScreen"} />
-      </Tooltip>
+      </Tooltip> */}
 
       {role === "MANAGER" && (
         <View style={{ position: "relative" }}>
