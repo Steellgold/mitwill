@@ -106,7 +106,7 @@ export const PlanningsScreen = ({ navigation }: Props): ReactElement => {
       <ScrollView>
         <View style={{ padding: 15 }}>
           {plannings.map((planning) => (
-            <Card>
+            <Card key={planning.uuid} style={{ marginBottom: 15 }}>
               <TouchableRipple onPress={() => navigation.navigate("PlanningScreen", { date: planning.from })} borderless style={{ borderRadius: 10 }}>
                 <>
                   <Card.Title
@@ -125,23 +125,29 @@ export const PlanningsScreen = ({ navigation }: Props): ReactElement => {
 
                       {planning.hours_type == "FOR_ALL" ? (
                         <>
-                          {[1, 2, 3, 4, 5].map((day) => (
-                            <DataTable.Row key={day} style={{
-                              backgroundColor: dayJS(planning.from).add(day - 1, "day").isSame(today, "day") ? "#fffbfe" : "transparent"
-                            }}>
-                              <DataTable.Cell>{dayJS(planning.from).add(day - 1, "day").format("ddd DD/MM")}</DataTable.Cell>
-                              <DataTable.Cell numeric>
-                                <Chip icon={"clock-start"}>
-                                  {fixTime(planning.allStart)}
-                                </Chip>
-                              </DataTable.Cell>
+                          {[
+                            1, 2, 3, 4, 5, planning.saturday_enabled ? 6 : null
+                          ].map((day) => (
+                            <>
+                              {day === null ? null
+                                : <DataTable.Row key={day} style={{
+                                  backgroundColor: dayJS(planning.from).add(day - 1, "day").isSame(today, "day") ? "#fffbfe" : "transparent"
+                                }}>
+                                  <DataTable.Cell>{dayJS(planning.from).add(day - 1, "day").format("ddd DD/MM")}</DataTable.Cell>
+                                  <DataTable.Cell numeric>
+                                    <Chip icon={"clock-start"}>
+                                      {fixTime(planning.allStart)}
+                                    </Chip>
+                                  </DataTable.Cell>
 
-                              <DataTable.Cell numeric>
-                                <Chip icon={"clock-end"}>
-                                  {fixTime(planning.allEnd)}
-                                </Chip>
-                              </DataTable.Cell>
-                            </DataTable.Row>
+                                  <DataTable.Cell numeric>
+                                    <Chip icon={"clock-end"}>
+                                      {fixTime(planning.allEnd)}
+                                    </Chip>
+                                  </DataTable.Cell>
+                                </DataTable.Row>
+                              }
+                            </>
                           ))}
                         </>
                       ) : (
