@@ -1,24 +1,28 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { type ReactElement, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { Button, FAB, Portal, TextInput } from "react-native-paper";
+import { ActivityIndicator, Button, FAB, Portal, Text, TextInput, TouchableRipple } from "react-native-paper";
 import { useSession } from "../../lib/hooks/useSession";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../App";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/db/supabase";
 import { useIsFocused } from "@react-navigation/native";
+import { pickSingle } from "react-native-document-picker";
+import FastImage from "react-native-fast-image";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 export const SessionScreen = ({ navigation }: Props): ReactElement => {
-  const { logout, session, logoutLoading } = useSession();
+  const { logout, session, logoutLoading, uuid, avatar } = useSession();
   if (!session) navigation.navigate("LoginScreen");
+  const [fileError, setFileError] = useState<string | null>(null);
   const isFocused = useIsFocused();
 
   const [editLoading, setEditLoading] = useState(false);
   const [firstName, setFirstName] = useState(session?.user.user_metadata.firstName);
   const [lastName, setLastName] = useState(session?.user.user_metadata.lastName);
+  const [loading, setLoading] = useState(false);
 
   const handleEdit = async(): Promise<void> => {
     setEditLoading(true);
@@ -31,23 +35,89 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
   return (
     <SafeAreaView style={{ height: "100%" }}>
       <ScrollView style={{ padding: 16 }}>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <TextInput
-            label="Prénom"
-            mode="outlined"
-            value={firstName}
-            onChangeText={setFirstName}
-            style={{ width: "50%" }}
-            disabled={logoutLoading || !session} />
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ justifyContent: "flex-start", alignItems: "flex-start", width: "30%", marginTop: 5 }}>
+            <TouchableRipple
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
+              onPress={async() => {
+                const file  = await pickSingle({ type: ["image/*"] });
 
-          <TextInput
-            label="Nom"
-            mode="outlined"
-            value={lastName}
-            onChangeText={setLastName}
-            style={{ width: "49%" }}
-            disabled={logoutLoading || !session} />
+                setLoading(true);
+                if (avatar) {
+                  const { data: removeData, error: removeError } = await supabase.storage.from("avatars").remove([`${uuid}.png`]);
+                  if (removeError) {
+                    console.error("Error removing existing avatar:", removeError);
+                  }
+
+                  if (!removeData) {
+                    console.error("No data returned from remove avatar");
+                  }
+
+                  console.log("removeData", removeData);
+                }
+
+                const { data, error } = await supabase.storage.from("avatars").upload(`${uuid}.png`, file);
+                if (error) {
+                  console.error("Error uploading file:", error);
+                  setFileError(error.message);
+                }
+                if (!data) {
+                  console.error("No data returned from file upload");
+                  setFileError("No data returned from file upload");
+                }
+
+                const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(`${uuid}.png`);
+                if (!publicUrl) setFileError("No publicUrl returned from file upload");
+
+                const { data: userData, error: userError } = await supabase.from("users")
+                  .update({ avatar: publicUrl }).eq("userId", session?.user.id || "");
+
+                if (userError) {
+                  console.error("Error updating user:", userError);
+                  setFileError(userError.message);
+                }
+
+                if (!userData) setFileError("No data returned from user update");
+
+                if (!error && !userError) {
+                  setFileError(null);
+                  setLoading(false);
+                }
+              }}
+              borderless
+              style={{ borderRadius: 10, width: 100, height: 100 }}>
+              <>
+                {loading && <ActivityIndicator color="#fd7e46" />}
+                {avatar && !loading && <FastImage
+                  source={{ cache: "web", uri: avatar || `https://api.dicebear.com/7.x/initials/png?seed=${firstName}+${lastName}` }}
+                  style={{ width: 100, height: 100, borderRadius: 10 }}
+                  onLoadEnd={() => setLoading(false)}
+                  onError={() => setLoading(false)}
+                />}
+              </>
+            </TouchableRipple>
+          </View>
+
+          <View style={{ flexDirection: "column", width: "70%" }}>
+            <TextInput
+              label="Prénom"
+              mode="outlined"
+              value={firstName}
+              onChangeText={setFirstName}
+              style={{ width: "100%" }}
+              disabled={logoutLoading || !session} />
+
+            <TextInput
+              label="Nom"
+              mode="outlined"
+              value={lastName}
+              onChangeText={setLastName}
+              style={{ width: "100%" }}
+              disabled={logoutLoading || !session} />
+          </View>
         </View>
+
+        {fileError && <Text style={{ color: "red" }}>{fileError}</Text>}
 
         <TextInput label="Email (Non modifiable)" mode="outlined" value={session?.user.email} disabled style={{ marginTop: 16 }} />
 
