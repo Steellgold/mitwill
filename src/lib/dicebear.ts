@@ -1,3 +1,3 @@
-export const getAvatar = (value?: string): string => {
-  return `https://api.dicebear.com/7.x/avataaars-neutral/png?seed=${value ?? "Cuddles"}&backgroundColor=f8d25c,ffdbb4,edb98a,ffdfbf`;
+export const getAvatar = (firstName: string, lastName: string): string => {
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${firstName}+${lastName}&backgroundColor=fd7e46`;
 };
