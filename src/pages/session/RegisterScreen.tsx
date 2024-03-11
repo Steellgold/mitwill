@@ -9,6 +9,7 @@ import { supabase } from "../../lib/db/supabase";
 import messaging from "@react-native-firebase/messaging";
 import { IS_DEV } from "../../../v";
 import { OPEN_APPROBATION } from "../../../codes";
+import { getAvatar } from "../../lib/dicebear";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -94,7 +95,8 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
         email,
         fcm_token: fcmToken,
         role: "EMPLOYEE",
-        notify_approbations: false
+        notify_approbations: false,
+        avatar: getAvatar(firstName, lastName)
       });
       if (error) {
         setError(error.message);
