@@ -29,7 +29,7 @@ type Action = {
 }
 
 export const CheckFAB = ({ visible }: Props): ReactElement => {
-  const { session, activeCheck, startCheck, endCheck, checks, setPauseTaken } = useSession();
+  const { session, activeCheck, startCheck, endCheck, setPauseTaken } = useSession();
   const [fabGroupOpen, setFabGroupOpen] = useState(false);
   const [dialogPauseVisible, setDialogPauseVisible] = useState(false);
 
@@ -113,7 +113,6 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
         disabled={
           !session
           || activeCheck
-          || checks.some((check) => check.date === dayJS().format("YYYY-MM-DD"))
           || isSunday
         }
         onPress={() => {
