@@ -1,7 +1,7 @@
 import type { Check } from "../providers/session";
 import type { Dayjs } from "./day-js";
 import { dayJS } from "./day-js";
-import type { DiffWithWT, TimeBeyond } from "./day-js.types";
+import type { DiffWithWT, SimpleDiff, TimeBeyond } from "./day-js.types";
 
 export const isWeekend = (date: Date): boolean => {
   const day = date.getDay();
@@ -49,6 +49,20 @@ export const calculate = (check: Check): DiffWithWT => {
     workTime: calculateWithoutPause(duration.hours().toString() + "h" + duration.minutes().toString(), check.pauseTaken)
   };
 };
+
+export const calculateDiff = (start: Dayjs | string, end: Dayjs | string): SimpleDiff => {
+  const startTime = dayJS(start);
+  const endTime = dayJS(end);
+  const duration = dayJS.duration(endTime.diff(startTime));
+
+  return {
+    days: duration.days().toString(),
+    hours: duration.hours().toString(),
+    minutes: duration.minutes().toString(),
+    seconds: duration.seconds().toString()
+  };
+};
+
 
 const calculateNightHours = (start: Dayjs, end: Dayjs): { hours: string; minutes: string } => {
   let nightStart = start.set({ hour: 21, minute: 30, second: 0 });
