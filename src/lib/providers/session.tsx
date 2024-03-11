@@ -31,6 +31,8 @@ export type SessionContextType = {
   status: Database["public"]["Enums"]["Status"];
 
   avatar: string | null;
+  setAvatar: (value: string) => void;
+
   uuid?: string;
 
   refreshing?: boolean;
@@ -199,7 +201,11 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
       status,
 
       uuid,
+
       avatar,
+      setAvatar(value: string) {
+        setAvatar(value);
+      },
 
       refreshing,
       async refresh() {
