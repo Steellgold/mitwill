@@ -30,6 +30,9 @@ export type SessionContextType = {
   role: Database["public"]["Enums"]["Role"];
   status: Database["public"]["Enums"]["Status"];
 
+  avatar: string | null;
+  uuid?: string;
+
   refreshing?: boolean;
   refresh?: () => void;
 };
@@ -46,6 +49,8 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
   const [needDataRefresh, setNeedDataRefresh] = useState<boolean>(false);
   const [appLoading, setAppLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [uuid, setUuid] = useState<string | undefined>();
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   const [status, setStatus] = useState<Database["public"]["Enums"]["Status"]>("WAITING");
   const [role, setRole] = useState<Database["public"]["Enums"]["Role"]>("EMPLOYEE");
@@ -74,10 +79,12 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
       .eq("userId", session?.user.id || "");
 
     if (error) console.error("Error:", error);
-    if (data) {
-      setStatus(data[0].status);
-      setRole(data[0].role);
-    }
+    if (!data) return console.error("No data returned from fetchUser");
+
+    setStatus(data[0].status);
+    setRole(data[0].role);
+    setUuid(data[0].userId);
+    setAvatar(data[0].avatar);
   };
 
   useEffect(() => {
@@ -190,6 +197,9 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
 
       role,
       status,
+
+      uuid,
+      avatar,
 
       refreshing,
       async refresh() {
