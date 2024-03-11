@@ -133,8 +133,6 @@ export const ApprovalsScreen = (): ReactElement => {
                                   declineds: [...prev.declineds, user]
                                 }));
 
-                                console.log("User declined:", user);
-
                                 await supabase
                                   .functions
                                   .invoke("push", {
@@ -172,10 +170,10 @@ export const ApprovalsScreen = (): ReactElement => {
                             <Button onPress={async() => {
                               setDialogVisibleFA(false);
 
-                              const { error, status } = await supabase
+                              const { error, data } = await supabase
                                 .rpc("approve_user", { user_id: user.userId });
                               if (error) console.error("Error:", error);
-                              if (status == 204) {
+                              if (data) {
                                 setUsers((prev) => ({
                                   ...prev,
                                   waitings: prev.waitings.filter((u) => u.userId !== user.userId),
