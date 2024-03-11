@@ -16,9 +16,6 @@ import { ApprovalsScreen } from "./src/pages/session/company/ApprovalsScreen";
 import type { Check } from "./src/lib/providers/session";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAsync } from "./src/lib/hooks/useAsync";
-import { PlanningBannerNotPlanned } from "./src/lib/components/plannings/ManagerBannerPlanned";
-import { PlanningsScreen } from "./src/pages/session/company/PlanningsScreen";
-import { CUPlanningScreen } from "./src/pages/session/company/manager/PlanningScreen";
 import { EmployeesScreen } from "./src/pages/session/company/manager/user/EmployeesScreen";
 import { EmployeeScreen } from "./src/pages/session/company/manager/user/EmployeeScreen";
 
@@ -68,7 +65,7 @@ export const App = (): ReactElement => {
     }
   }, []);
 
-  if (appLoading || logoutLoading) {
+  if (appLoading || logoutLoading || refreshing) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 3, backgroundColor: "#fffbfe" }}>
         <ActivityIndicator size={"large"} style={{ marginBottom: 10 }} color="#fd7e47" />
@@ -130,7 +127,7 @@ export const App = (): ReactElement => {
           <>
             {/* @ts-ignore */}
             <AppBar {...props} />
-            {props.route.name == "HomeScreen" && <PlanningBannerNotPlanned />}
+            {/* {props.route.name == "HomeScreen" && <PlanningBannerNotPlanned />} */}
           </>
         )
       }}
@@ -144,11 +141,11 @@ export const App = (): ReactElement => {
       <Stack.Screen name="SessionScreen" component={SessionScreen} />
 
       <Stack.Screen name="CheckInfoScreen" component={CheckInfoScreen} />
-      <Stack.Screen name="PlanningScreen" component={PlanningsScreen} />
+      {/* <Stack.Screen name="PlanningScreen" component={PlanningsScreen} /> */}
 
       {/* Manage screens */}
       <Stack.Screen name="ApprovalsScreen" component={ApprovalsScreen} />
-      <Stack.Screen name="CUPlanningScreen" component={CUPlanningScreen} />
+      {/* <Stack.Screen name="CUPlanningScreen" component={CUPlanningScreen} /> */}
 
       {/* User screens (Manager) */}
       <Stack.Screen name="EmployeesScreen" component={EmployeesScreen} />
