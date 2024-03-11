@@ -19,6 +19,8 @@ import { useAsync } from "./src/lib/hooks/useAsync";
 import { PlanningBannerNotPlanned } from "./src/lib/components/plannings/ManagerBannerPlanned";
 import { PlanningsScreen } from "./src/pages/session/company/PlanningsScreen";
 import { CUPlanningScreen } from "./src/pages/session/company/manager/PlanningScreen";
+import { EmployeesScreen } from "./src/pages/session/company/manager/user/EmployeesScreen";
+import { EmployeeScreen } from "./src/pages/session/company/manager/user/EmployeeScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -42,6 +44,15 @@ export type RootStackParamList = {
   CUPlanningScreen: {
     date: string;
     planningId?: string;
+  };
+
+  // User screens (Manager)
+  EmployeesScreen: undefined;
+  EmployeeScreen: {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    avatar: string;
   };
 };
 
@@ -138,6 +149,10 @@ export const App = (): ReactElement => {
       {/* Manage screens */}
       <Stack.Screen name="ApprovalsScreen" component={ApprovalsScreen} />
       <Stack.Screen name="CUPlanningScreen" component={CUPlanningScreen} />
+
+      {/* User screens (Manager) */}
+      <Stack.Screen name="EmployeesScreen" component={EmployeesScreen} />
+      <Stack.Screen name="EmployeeScreen" component={EmployeeScreen} />
     </Stack.Navigator>
   );
 };
