@@ -4,13 +4,15 @@ import { NoCheckCard } from "./NoCheckCard";
 import { useAsync } from "../../hooks/useAsync";
 import { supabase } from "../../db/supabase";
 import { dayJS } from "../../dayjs/day-js";
-import { ActivityIndicator, Button, Card, DataTable, Icon, IconButton, TouchableRipple } from "react-native-paper";
+import { ActivityIndicator, Button, Card, Chip, DataTable, Icon, IconButton, Text, TouchableRipple } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import type { Check } from "../../providers/session";
 import { View } from "react-native";
+// @ts-ignore
+import GifImage from "@lowkey/react-native-gif";
 
 export const WeeklyCheckCard = (): ReactElement => {
-  const { session, needDataRefresh } = useSession();
+  const { session, needDataRefresh, role } = useSession();
   if (!session) return <NoCheckCard type="weekly" />;
   const { navigate } = useNavigation();
 
@@ -53,11 +55,8 @@ export const WeeklyCheckCard = (): ReactElement => {
       .lte("date", dayJS(week).endOf("week").format("YYYY-MM-DD"))
       .order("date", { ascending: true });
 
-    if (error) {
-      console.error("Error:WCC", error.message);
-    } else {
-      setChecks(data || []);
-    }
+    if (error) setChecks([]);
+    else setChecks(data || []);
   }, [session]);
 
   const handleSwitchWeek = (action: "previous" | "next" | "reset"): void => {
@@ -77,17 +76,22 @@ export const WeeklyCheckCard = (): ReactElement => {
     <Card>
       <Card.Title
         title={`Semaine du ${dayJS(week).startOf("week").format("DD MMMM")} au ${dayJS(week).endOf("week").add(-2, "d").format("DD MMMM")}`}
-        subtitle="Liste des pointages de la semaine"
+        subtitle={
+          dayJS(week).isSame(dayJS(), "week")
+            ? "Liste des pointages de la semaine actuelle"
+            : dayJS(week).isBefore(dayJS(), "week")
+              ? "Liste des pointages de la semaine passée"
+              : "Liste des pointages de la semaine à venir"
+        }
         subtitleVariant="bodySmall"
         subtitleStyle={{ marginTop: -5 }}
       />
 
       <DataTable style={{ padding: 4 }}>
         <DataTable.Header>
-          <DataTable.Title>Date</DataTable.Title>
+          <DataTable.Title style={{ flex: 2 }}>Date</DataTable.Title>
           <DataTable.Title numeric>Début</DataTable.Title>
           <DataTable.Title numeric>Sortie</DataTable.Title>
-          <DataTable.Title numeric>Pause</DataTable.Title>
         </DataTable.Header>
 
         {loading ? (
@@ -95,22 +99,48 @@ export const WeeklyCheckCard = (): ReactElement => {
             <ActivityIndicator animating color="#fd7e46" size="large"/>
           </DataTable.Row>
         ) : checks.length === 0 ? (
-          <DataTable.Row>
-            <DataTable.Cell>Aucun pointage cette semaine pour le moment</DataTable.Cell>
-          </DataTable.Row>
+          <>
+            {dayJS(week).isAfter(dayJS(), "week") && dayJS(week).diff(dayJS(), "week") > 6 ? (
+              <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                <GifImage
+                  source={{ uri: "https://i0.wp.com/quartierdudigital.fr/wp-content/uploads/2015/10/8.gif" }}
+                  style={{ width: 200, height: 200, flex: 1 }}
+                  resizeMode="contain"
+                />
+
+                <Text style={{ textAlign: "center" }}>
+                  Wow, tu es en avance sur ton temps ! 🤯
+                </Text>
+              </View>
+            ) : (
+              <DataTable.Row>
+                <DataTable.Cell>Aucun pointage cette semaine pour le moment</DataTable.Cell>
+              </DataTable.Row>
+            )}
+          </>
         ) : checks.map((check) => (
-          // @ts-ignore
-          <TouchableRipple borderless onPress={(): void => navigate("CheckInfoScreen", check)} key={check.uuid}>
+          <TouchableRipple
+            borderless
+            disabled={!check.end}
+            // @ts-ignore
+            onPress={(): void => navigate("CheckInfoScreen", {
+              check: check,
+              isManager: role === "MANAGER"
+            })} key={check.uuid}>
             <DataTable.Row>
-              <DataTable.Cell>{dayJS(check.date).format("ddd DD/MM")}</DataTable.Cell>
+              <DataTable.Cell style={{ flex: check.end ? 2 : 1 }}>
+                {dayJS(check.date).format(`ddd ${
+                  dayJS(check.end).format("DD/MM/YYYY") === dayJS(check.start).format("DD/MM/YYYY") ? "DD/MM"
+                    : !check.end ? "DD/MM" : ""
+                }`)}
+                {dayJS(check.start).dayOfYear() < dayJS(check.end).dayOfYear() ? dayJS(check.end).format("→ ddd DD/MM") : ""}
+              </DataTable.Cell>
               <DataTable.Cell numeric>{dayJS(check.start).format("HH[h ]mm[m]")}</DataTable.Cell>
               {check.end
                 ? <DataTable.Cell numeric>{dayJS(check.end).format("HH[h ]mm[m]")}</DataTable.Cell>
-                : <DataTable.Cell numeric>En cours</DataTable.Cell>
-              }
-              {check.pauseTaken
-                ? <DataTable.Cell numeric>45 min</DataTable.Cell>
-                : <DataTable.Cell numeric>20 min</DataTable.Cell>
+                : <DataTable.Cell numeric>
+                  <Chip>En cours</Chip>
+                </DataTable.Cell>
               }
             </DataTable.Row>
           </TouchableRipple>
