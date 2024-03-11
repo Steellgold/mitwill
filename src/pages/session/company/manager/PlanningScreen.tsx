@@ -84,6 +84,7 @@ export const CUPlanningScreen = ({ route, navigation }: Props): ReactElement => 
         allStart,
         allEnd,
         can_start_sunday: sunday,
+        saturday_enabled: saturday,
         week_type: weekType,
         hours_type: hoursForAllDays ? "FOR_ALL" : "CUSTOM"
       }
