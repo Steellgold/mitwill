@@ -133,6 +133,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["userId"];
+          },
+          {
+            foreignKeyName: "public_plannings_by_fkey";
+            columns: ["by"];
+            isOneToOne: false;
+            referencedRelation: "users_view";
+            referencedColumns: ["userId"];
           }
         ];
       };
@@ -140,6 +147,7 @@ export type Database = {
         Row: {
           active: string | null;
           approvedAt: string | null;
+          avatar: string | null;
           createdAt: string;
           declinedAt: string | null;
           declinedFor: string | null;
@@ -156,6 +164,7 @@ export type Database = {
         Insert: {
           active?: string | null;
           approvedAt?: string | null;
+          avatar?: string | null;
           createdAt?: string;
           declinedAt?: string | null;
           declinedFor?: string | null;
@@ -172,6 +181,7 @@ export type Database = {
         Update: {
           active?: string | null;
           approvedAt?: string | null;
+          avatar?: string | null;
           createdAt?: string;
           declinedAt?: string | null;
           declinedFor?: string | null;
@@ -204,7 +214,32 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never
+      users_view: {
+        Row: {
+          firstName: string | null;
+          lastName: string | null;
+          userId: string | null;
+        };
+        Insert: {
+          firstName?: string | null;
+          lastName?: string | null;
+          userId?: string | null;
+        };
+        Update: {
+          firstName?: string | null;
+          lastName?: string | null;
+          userId?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "public_users_userId_fkey";
+            columns: ["userId"];
+            isOneToOne: true;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Functions: {
       approve_user: {
@@ -214,6 +249,7 @@ export type Database = {
         Returns: {
           active: string | null;
           approvedAt: string | null;
+          avatar: string | null;
           createdAt: string;
           declinedAt: string | null;
           declinedFor: string | null;
@@ -240,6 +276,7 @@ export type Database = {
         Returns: {
           active: string | null;
           approvedAt: string | null;
+          avatar: string | null;
           createdAt: string;
           declinedAt: string | null;
           declinedFor: string | null;
@@ -257,6 +294,15 @@ export type Database = {
       get_approbator: {
         Args: Record<PropertyKey, never>;
         Returns: string;
+      };
+      get_user: {
+        Args: {
+          uuid: string;
+        };
+        Returns: {
+          firstname: string;
+          lastname: string;
+        }[];
       };
       is_manager: {
         Args: {
