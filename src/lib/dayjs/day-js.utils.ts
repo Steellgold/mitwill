@@ -1,5 +1,7 @@
+import type { Check } from "../providers/session";
+import type { Dayjs } from "./day-js";
 import { dayJS } from "./day-js";
-import type { Diff } from "./day-js.types";
+import type { DiffWithWT, TimeBeyond } from "./day-js.types";
 
 export const isWeekend = (date: Date): boolean => {
   const day = date.getDay();
@@ -26,108 +28,96 @@ export const mjmonth = (date?: Date | string): string => {
   return dayJS(date).format("MMMM").replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
 };
 
-export const calculateDiff = (
-  start: Date | string,
-  end: Date | string,
-  addZero = true,
-  defaultStartHour = "06:00",
-  defaultEndHour = "14:00",
-  remove: {
-    hours: number;
-    minutes: number;
-  } = { hours: 0, minutes: 0 }
-): Diff => {
-  const startDate = dayJS(start);
-  const endDate = dayJS(end);
-  const diff = endDate.diff(startDate);
+export const calculate = (check: Check): DiffWithWT => {
+  const start: Dayjs = dayJS(check.start);
+  const end: Dayjs | null = check.end ? dayJS(check.end) : null;
+  const estimatedEnd: Dayjs = dayJS(check.start).add(7, "hours").add(check.pauseTaken ? 45 : 20, "minutes");
 
-  const totalDuration = dayJS.duration(diff);
-  let days = totalDuration.days().toString();
-  let hours = totalDuration.hours().toString();
-  let minutes = totalDuration.minutes().toString();
-  let seconds = totalDuration.seconds().toString();
+  const diff = end ? end.diff(start, "seconds") : 0;
+  const duration = dayJS.duration(diff, "seconds");
 
-  if (addZero) {
-    days = addLeadingZero(days);
-    hours = addLeadingZero(hours);
-    minutes = addLeadingZero(minutes);
-    seconds = addLeadingZero(seconds);
-  }
+  const nbrSupps = calculateTimeBeyond(start, end || estimatedEnd, check.pauseTaken);
+  const nbrNights = calculateNightHours(start, end || estimatedEnd);
 
-  let nbrSuppsMinutes = 0;
-  let nbrNightsMinutes = 0;
-
-  let currentTime = startDate;
-  while (currentTime < endDate) {
-    const hour = currentTime.hour();
-    const minute = currentTime.minute();
-    const currentMinutes = hour * 60 + minute;
-    const nightStart = 21 * 60 + 30;
-    const nightEnd = 6 * 60;
-    const overtimeStart = dayJS(defaultStartHour, "HH:mm").hour() * 60;
-    const overtimeEnd = dayJS(defaultEndHour, "HH:mm").hour() * 60;
-
-    if ((currentMinutes >= nightStart) || (currentMinutes < nightEnd)) {
-      nbrNightsMinutes++;
-    }
-
-    if (currentMinutes < overtimeStart || currentMinutes >= overtimeEnd) {
-      nbrSuppsMinutes++;
-    }
-
-    currentTime = currentTime.add(1, "minute");
-  }
-
-  function addLeadingZero(number: string): string {
-    return parseInt(number) < 10 ? `0${number}` : number;
-  }
-
-  const convertMinutesToHoursAndMinutes = (totalMinutes: number): { hours: string; minutes: string } => ({
-    hours: addLeadingZero(Math.floor(totalMinutes / 60).toString()),
-    minutes: addLeadingZero((totalMinutes % 60).toString())
-  });
-
-  const nbrSupps = convertMinutesToHoursAndMinutes(nbrSuppsMinutes);
-  const nbrNights = convertMinutesToHoursAndMinutes(nbrNightsMinutes);
-
-  if (remove.hours > 0) {
-    hours = (parseInt(hours) - remove.hours).toString();
-  }
-
-  if (remove.minutes > 0) {
-    minutes = (parseInt(minutes) - remove.minutes).toString();
-  }
-
-  return { days, hours, minutes, seconds, nbrSupps, nbrNights };
+  return {
+    days: duration.days().toString(),
+    hours: duration.hours().toString(),
+    minutes: duration.minutes().toString(),
+    seconds: duration.seconds().toString(),
+    nbrSupps,
+    nbrNights,
+    workTime: calculateWithoutPause(duration.hours().toString() + "h" + duration.minutes().toString(), check.pauseTaken)
+  };
 };
 
-export type ShiftB = {
-  start: string;
-  end: string | null;
+const calculateNightHours = (start: Dayjs, end: Dayjs): { hours: string; minutes: string } => {
+  let nightStart = start.set({ hour: 21, minute: 30, second: 0 });
+  if (start.isAfter(nightStart)) {
+    nightStart = nightStart.add(1, "day");
+  }
+  const nightEnd = nightStart.clone().set({ hour: 6, minute: 0, second: 0 }).add(1, "day");
+
+  if (start.isBefore(nightStart) && end.isAfter(nightStart)) {
+    nightStart = start.clone().set({ hour: 21, minute: 30, second: 0 });
+  }
+
+  let nightHours = 0;
+  let nightMinutes = 0;
+
+  if (start.isBefore(nightEnd) && end.isAfter(nightStart)) {
+    const nightPeriodStart = start.isAfter(nightStart) ? start : nightStart;
+    const nightPeriodEnd = end.isBefore(nightEnd) ? end : nightEnd;
+    const nightDiff = nightPeriodEnd.diff(nightPeriodStart, "minutes");
+    nightHours = Math.floor(nightDiff / 60);
+    nightMinutes = nightDiff % 60;
+  }
+
+  return {
+    hours: nightHours.toString().padStart(2, "0"),
+    minutes: nightMinutes.toString().padStart(2, "0")
+  };
 };
 
-export type WeekShifts = {
-  weekKey: number;
-  shifts: ShiftB[];
+const calculateWithoutPause = (time: string, pt = true): TimeBeyond => {
+  // ex time: 13h46m, 13h46
+  // si pt = true = 45m, sinon 20m
+  // du coup on retire le temps de pause et on retourne le temps sans la pause
+  const timeArray = time.split("h");
+  const hours = parseInt(timeArray[0]);
+  const minutes = parseInt(timeArray[1].replace("m", ""));
+  const pause = pt ? 45 : 20;
+  const pauseHours = Math.floor(pause / 60);
+  const pauseMinutes = pause % 60;
+  let newMinutes = minutes - pauseMinutes;
+  let newHours = hours - pauseHours;
+
+  if (newMinutes < 0) {
+    newMinutes += 60;
+    newHours -= 1;
+  }
+
+  return {
+    hours: newHours.toString().padStart(2, "0"),
+    minutes: newMinutes.toString().padStart(2, "0")
+  };
 };
 
-export function nbrDaysWork(shiftData: WeekShifts[]): number {
-  if (shiftData.length === 0) return 0;
-  let days = 0;
-  shiftData.map(week => week.shifts.map(() => days += 1));
+export const calculateTimeBeyond = (start: Dayjs | string, end: Dayjs | string, pt = true): TimeBeyond => {
+  const startTime = dayJS(start);
+  const endTime = dayJS(end);
+  const diffDuration = dayJS.duration(endTime.diff(startTime));
+  const referenceDuration = dayJS.duration({ hours: 7, minutes: pt ? 45 : 20 });
 
-  return days;
-}
+  if (diffDuration.asMinutes() > referenceDuration.asMinutes()) {
+    const beyondDuration = dayJS.duration(diffDuration.asMilliseconds() - referenceDuration.asMilliseconds());
 
-export const calculateNightHours = (shiftData: WeekShifts[]): number => {
-  if (shiftData.length === 0) return 0;
-  let hours = 0;
-  shiftData.map(week => week.shifts.map(shift => {
-    const start = dayJS(shift.start);
-    const end = dayJS(shift.end);
-    const diff = end.diff(start, "hours");
-    if (diff > 0) hours += diff;
-  }));
+    const addLeadingZero = (number: number): string => (number < 10 ? `0${number}` : number.toString());
 
-  return hours;
+    return {
+      hours: addLeadingZero(beyondDuration.hours() + (beyondDuration.days() * 24)),
+      minutes: addLeadingZero(beyondDuration.minutes())
+    };
+  }
+
+  return { hours: "00", minutes: "00" };
 };
