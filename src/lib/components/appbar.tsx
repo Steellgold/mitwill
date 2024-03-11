@@ -73,6 +73,14 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
         </View>
       )}
 
+      {role === "MANAGER" && (
+        <Appbar.Action
+          icon="account-group"
+          onPress={() => navigation.push("EmployeesScreen")}
+          disabled={role !== "MANAGER"}
+        />
+      )}
+
       <Tooltip title="Compte" leaveTouchDelay={200} enterTouchDelay={200}>
         <Appbar.Action icon={session ? "account" : "account-key"} disabled={
           !session && route.name === "LoginScreen"
