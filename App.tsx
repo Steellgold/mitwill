@@ -30,18 +30,21 @@ export type RootStackParamList = {
   RegisterScreen: undefined;
   SessionScreen: undefined;
 
-  CheckInfoScreen: Check;
-  PlanningScreen: {
-    date?: string;
-    refresh?: boolean;
+  CheckInfoScreen: {
+    check: Check;
+    isManager?: boolean;
   };
+  // PlanningScreen: {
+  //   date?: string;
+  //   refresh?: boolean;
+  // };
 
   // Manage screens
   ApprovalsScreen: undefined;
-  CUPlanningScreen: {
-    date: string;
-    planningId?: string;
-  };
+  // CUPlanningScreen: {
+  //   date: string;
+  //   planningId?: string;
+  // };
 
   // User screens (Manager)
   EmployeesScreen: undefined;
