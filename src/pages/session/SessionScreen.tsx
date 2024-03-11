@@ -10,11 +10,12 @@ import { supabase } from "../../lib/db/supabase";
 import { useIsFocused } from "@react-navigation/native";
 import { pickSingle } from "react-native-document-picker";
 import FastImage from "react-native-fast-image";
+import { avatarTime, getAvatar } from "../../lib/dicebear";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 export const SessionScreen = ({ navigation }: Props): ReactElement => {
-  const { logout, session, logoutLoading, uuid, avatar } = useSession();
+  const { logout, session, logoutLoading, uuid, avatar, setAvatar } = useSession();
   if (!session) navigation.navigate("LoginScreen");
   const [fileError, setFileError] = useState<string | null>(null);
   const isFocused = useIsFocused();
@@ -40,23 +41,20 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
             <TouchableRipple
               // eslint-disable-next-line @typescript-eslint/no-misused-promises
               onPress={async() => {
-                const file  = await pickSingle({ type: ["image/*"] });
+                const file  = await pickSingle({ type: ["image/png"] });
 
                 setLoading(true);
                 if (avatar) {
                   const { data: removeData, error: removeError } = await supabase.storage.from("avatars").remove([`${uuid}.png`]);
-                  if (removeError) {
-                    console.error("Error removing existing avatar:", removeError);
-                  }
-
-                  if (!removeData) {
-                    console.error("No data returned from remove avatar");
-                  }
-
+                  if (removeError) console.error("Error removing existing avatar:", removeError);
+                  if (!removeData) console.error("No data returned from remove avatar");
                   console.log("removeData", removeData);
                 }
 
-                const { data, error } = await supabase.storage.from("avatars").upload(`${uuid}.png`, file);
+                const { data, error } = await supabase.storage.from("avatars").upload(`${uuid}.png`, file, {
+                  contentType: "image/png",
+                  cacheControl: "3600"
+                });
                 if (error) {
                   console.error("Error uploading file:", error);
                   setFileError(error.message);
@@ -79,9 +77,10 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
 
                 if (!userData) setFileError("No data returned from user update");
 
-                if (!error && !userError) {
+                if (publicUrl) {
                   setFileError(null);
                   setLoading(false);
+                  setAvatar(avatarTime(publicUrl));
                 }
               }}
               borderless
@@ -89,7 +88,8 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
               <>
                 {loading && <ActivityIndicator color="#fd7e46" />}
                 {avatar && !loading && <FastImage
-                  source={{ cache: "web", uri: avatar || `https://api.dicebear.com/7.x/initials/png?seed=${firstName}+${lastName}` }}
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                  source={{ cache: "web", uri: avatarTime(avatar) || getAvatar(firstName, lastName) }}
                   style={{ width: 100, height: 100, borderRadius: 10 }}
                   onLoadEnd={() => setLoading(false)}
                   onError={() => setLoading(false)}
