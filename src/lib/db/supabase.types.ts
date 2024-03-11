@@ -49,15 +49,16 @@ export type Database = {
           allEnd: string | null;
           allStart: string | null;
           by: string;
-          can_start_sunday: boolean | null;
+          can_start_sunday: boolean;
           created_at: string;
           for: string[];
           friday_end: string | null;
           friday_start: string | null;
           from: string;
-          hours_type: Database["public"]["Enums"]["HoursType"] | null;
+          hours_type: Database["public"]["Enums"]["HoursType"];
           monday_end: string | null;
           monday_start: string | null;
+          saturday_enabled: boolean;
           saturday_end: string | null;
           saturday_start: string | null;
           sunday_end: string | null;
@@ -70,21 +71,22 @@ export type Database = {
           uuid: string;
           wednesday_end: string | null;
           wednesday_start: string | null;
-          week_type: Database["public"]["Enums"]["WeekType"] | null;
+          week_type: Database["public"]["Enums"]["WeekType"];
         };
         Insert: {
           allEnd?: string | null;
           allStart?: string | null;
           by: string;
-          can_start_sunday?: boolean | null;
+          can_start_sunday?: boolean;
           created_at?: string;
           for: string[];
           friday_end?: string | null;
           friday_start?: string | null;
           from: string;
-          hours_type?: Database["public"]["Enums"]["HoursType"] | null;
+          hours_type?: Database["public"]["Enums"]["HoursType"];
           monday_end?: string | null;
           monday_start?: string | null;
+          saturday_enabled?: boolean;
           saturday_end?: string | null;
           saturday_start?: string | null;
           sunday_end?: string | null;
@@ -97,21 +99,22 @@ export type Database = {
           uuid?: string;
           wednesday_end?: string | null;
           wednesday_start?: string | null;
-          week_type?: Database["public"]["Enums"]["WeekType"] | null;
+          week_type?: Database["public"]["Enums"]["WeekType"];
         };
         Update: {
           allEnd?: string | null;
           allStart?: string | null;
           by?: string;
-          can_start_sunday?: boolean | null;
+          can_start_sunday?: boolean;
           created_at?: string;
           for?: string[];
           friday_end?: string | null;
           friday_start?: string | null;
           from?: string;
-          hours_type?: Database["public"]["Enums"]["HoursType"] | null;
+          hours_type?: Database["public"]["Enums"]["HoursType"];
           monday_end?: string | null;
           monday_start?: string | null;
+          saturday_enabled?: boolean;
           saturday_end?: string | null;
           saturday_start?: string | null;
           sunday_end?: string | null;
@@ -124,7 +127,7 @@ export type Database = {
           uuid?: string;
           wednesday_end?: string | null;
           wednesday_start?: string | null;
-          week_type?: Database["public"]["Enums"]["WeekType"] | null;
+          week_type?: Database["public"]["Enums"]["WeekType"];
         };
         Relationships: [
           {
@@ -216,16 +219,19 @@ export type Database = {
     Views: {
       users_view: {
         Row: {
+          avatar: string | null;
           firstName: string | null;
           lastName: string | null;
           userId: string | null;
         };
         Insert: {
+          avatar?: string | null;
           firstName?: string | null;
           lastName?: string | null;
           userId?: string | null;
         };
         Update: {
+          avatar?: string | null;
           firstName?: string | null;
           lastName?: string | null;
           userId?: string | null;
