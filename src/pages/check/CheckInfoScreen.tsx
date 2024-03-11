@@ -5,9 +5,8 @@ import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import { Avatar, Card, Divider, Text } from "react-native-paper";
 import type { RootStackParamList } from "../../../App";
 import { dayJS } from "../../lib/dayjs/day-js";
-import { calculateDiff } from "../../lib/dayjs/day-js.utils";
-import type { Diff } from "../../lib/dayjs/day-js.types";
-import { NOTE_PLANNING, RELEASE } from "../../../v";
+import { calculate } from "../../lib/dayjs/day-js.utils";
+import type { DiffWithWT } from "../../lib/dayjs/day-js.types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "CheckInfoScreen">;
 
@@ -16,19 +15,7 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
     return <View />;
   }
 
-  let duration: Diff = calculateDiff(route.params.start, dayJS().format());
-  let durationPauseSubstracted: Diff = {
-    days: "00", hours: "00", minutes: "00", seconds: "00",
-    nbrNights: { hours: "00", minutes: "00" },
-    nbrSupps: { hours: "00", minutes: "00" }
-  };
-
-  if (route.params.end) {
-    duration = calculateDiff(route.params.start, route.params.end, true, "06:00", "14:00");
-    durationPauseSubstracted = calculateDiff(
-      route.params.start, route.params.end, true, "06:00", "14:00", { hours: 0, minutes: route.params.pauseTaken ? 45 : 20 }
-    );
-  }
+  const duration: DiffWithWT = calculate(route.params);
 
   return (
     <SafeAreaView>
@@ -108,18 +95,14 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
                 )}
               </View>
 
-              <View style={{ marginVertical: 5 }} />
+              <Divider style={{ marginVertical: 15 }} />
 
               <Card>
                 <Card.Title
-                  title="Temps de travail net"
-                  subtitle={`${durationPauseSubstracted.hours} heures et ${durationPauseSubstracted.minutes} mins`}
+                  title="Temps de travail (sans pause)"
+                  subtitle={`${duration.workTime.hours} heures et ${duration.workTime.minutes} mins`}
                   subtitleStyle={{ marginTop: -5 }}
                 />
-
-                <Card.Content>
-                  <Text variant="bodySmall">Un total de {route.params.pauseTaken ? "45" : "20"} minutes a été déduit de votre temps de travail.</Text>
-                </Card.Content>
               </Card>
             </Card.Content>
 
@@ -130,13 +113,6 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
                 <Avatar.Icon color="#fd7e46" size={24} icon="information" style={{ backgroundColor: "transparent" }}/>
                 <Text style={styles.orange}>Ces informations sont visibles par votre employeur.</Text>
               </View>
-
-              {!RELEASE && (
-                <View style={{ flexDirection: "row", gap: 3, alignItems: "center" }}>
-                  <Avatar.Icon color="#fd4646" size={24} icon="alert-box" style={{ backgroundColor: "transparent" }}/>
-                  <Text style={styles.red}>{NOTE_PLANNING}</Text>
-                </View>
-              )}
             </View>
           </Card>
 
@@ -149,7 +125,7 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
 
           <Text style={styles.bold}>Note:</Text>
           <Text>- Les heures de nuit sont calculées entre 21h30 et 6h00.</Text>
-          <Text>- Les heures supplémentaires sont calculées en dehors des horaires de travail habituels (Si vous pointez avant l'heure de début ou après l'heure de fin).</Text>
+          <Text>- Les heures supplémentaires sont calculées au-delà de 7h{route.params.pauseTaken ? "45" : "20"} de travail.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
