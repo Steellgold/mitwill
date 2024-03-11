@@ -1,5 +1,5 @@
-import type { ReactElement } from "react";
-import { View } from "react-native";
+import { useState, type ReactElement } from "react";
+import { RefreshControl, SafeAreaView, ScrollView, View } from "react-native";
 import { useSession } from "../lib/hooks/useSession";
 import type { RootStackParamList } from "../../App";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -11,16 +11,28 @@ import { useIsFocused } from "@react-navigation/native";
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 export const HomeScreen = ({ navigation }: Props): ReactElement => {
-  const { session } = useSession();
+  const { session, refresh } = useSession();
   if (!session) navigation.navigate("LoginScreen");
   const isFocused = useIsFocused();
+  const [refreshing, setRefreshing] = useState(false);
 
   return (
-    <View style={{ padding: 15, gap: 10 }}>
-      <CheckCard />
-      <WeeklyCheckCard />
+    <SafeAreaView>
+      <ScrollView refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={() => {
+          setRefreshing(true);
+          refresh?.()
+            .then(() => setRefreshing(false))
+            .catch(() => setRefreshing(false));
+        }} />
+      }>
+        <View style={{ padding: 15, gap: 10 }}>
+          <CheckCard />
+          <WeeklyCheckCard />
 
-      <CheckFAB visible={isFocused} />
-    </View>
+          <CheckFAB visible={isFocused} />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
