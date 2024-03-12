@@ -124,9 +124,6 @@ export const calculateTimeBeyond = (start: Dayjs | string, end: Dayjs | string, 
 
   if (diffDuration.asMinutes() > referenceDuration.asMinutes()) {
     const beyondDuration = dayJS.duration(diffDuration.asMilliseconds() - referenceDuration.asMilliseconds());
-
-    const addLeadingZero = (number: number): string => (number < 10 ? `0${number}` : number.toString());
-
     return {
       hours: addLeadingZero(beyondDuration.hours() + (beyondDuration.days() * 24)),
       minutes: addLeadingZero(beyondDuration.minutes())
@@ -134,4 +131,8 @@ export const calculateTimeBeyond = (start: Dayjs | string, end: Dayjs | string, 
   }
 
   return { hours: "00", minutes: "00" };
+};
+
+export const addLeadingZero = (number: number): string => {
+  return number < 10 ? `0${number}` : number.toString();
 };
