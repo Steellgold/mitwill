@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import type { PropsWithChildren, ReactElement } from "react";
 import React, { createContext, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
@@ -19,7 +20,11 @@ export type SessionContextType = {
   checks: Check[] | [];
 
   startCheck: () => Promise<void>;
-  endCheck: () => Promise<void>;
+  endCheck: (
+    needValidation?: boolean,
+    start?: string,
+    end?: string
+  ) => Promise<void>;
 
   reloadChecks?: () => Promise<void>;
 
@@ -135,10 +140,14 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
     }
   };
 
-  const endCheck = async(): Promise<void> => {
+  const endCheck = async(needValidation = false, start = "", end = ""): Promise<void> => {
     const { error } = await supabase
       .from("checks")
-      .update({ end: dayJS().format("YYYY-MM-DD HH:mm:ss") })
+      .update({
+        end: end !== "" ? end : dayJS().format("YYYY-MM-DD HH:mm:ss"),
+        start: start !== "" ? start : activeCheck?.start,
+        need_validation: needValidation
+      })
       .eq("uuid", activeCheck?.uuid || "")
       .eq("userId", session?.user.id || "")
       .single();

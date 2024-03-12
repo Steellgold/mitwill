@@ -11,7 +11,7 @@ type Props = {
   visible: boolean;
   hideDialog: () => void;
   onDismiss: () => void;
-  onConfirm: ({ start, end }: { start: string; end: string }) => void;
+  onConfirm: ({ start, end, needValidation }: { start: string; end: string; needValidation?: boolean }) => void;
 
   check: Check;
 };
@@ -19,8 +19,6 @@ type Props = {
 export const ConfirmCheckDialog = ({ visible, hideDialog, onDismiss, onConfirm, check }: Props): ReactElement => {
   const [value, setValue] = useState<"start" | "end">("start");
   const [needValidation, setNeedValidation] = useState(false);
-
-  console.log({ check });
 
   const [start, setStart] = useState<string>(dayJS(check.start).format("HH:mm:ss"));
   const [end, setEnd] = useState<string>(dayJS(check.end || new Date()).format("HH:mm:ss"));
@@ -85,7 +83,12 @@ export const ConfirmCheckDialog = ({ visible, hideDialog, onDismiss, onConfirm, 
                 onFocusInput={() => console.log("onFocusInput")}
                 inputFontSize={38}
                 onChange={({ hours, minutes, focused }) => {
-                  console.log(hours, addLeadingZero(minutes), focused);
+                  if (focused) return;
+                  if (value === "start") {
+                    setStart(`${addLeadingZero(hours)}:${addLeadingZero(minutes)}:00`);
+                  } else {
+                    setEnd(`${addLeadingZero(hours)}:${addLeadingZero(minutes)}:00`);
+                  }
                 }}
               />
 
@@ -101,8 +104,7 @@ export const ConfirmCheckDialog = ({ visible, hideDialog, onDismiss, onConfirm, 
           }}>Annuler</Button>
           <Button
             onPress={() => {
-              console.log({ start, end });
-              onConfirm({ start, end });
+              onConfirm({ start, end, needValidation });
               hideDialog();
             }}>
             {needValidation ? "Envoyer pour validation" : "Confirmer"}
