@@ -67,8 +67,12 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
           check={activeCheck}
           visible={dialogCheckVisible}
           hideDialog={() => setDialogCheckVisible(false)}
-          onConfirm={() => {
-            endCheck()
+          onConfirm={({ start, end, needValidation }) => {
+            endCheck(
+              needValidation,
+              needValidation ? `${dayJS().format("YYYY-MM-DD")}T${start}` : "",
+              needValidation ? `${dayJS().format("YYYY-MM-DD")}T${end}` : ""
+            )
               .then(() => console.log("Check ended"))
               .catch((error) => console.error("Error (CheckFAB.tsx l31):", error));
           }}
