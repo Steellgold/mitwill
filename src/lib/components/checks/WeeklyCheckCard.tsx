@@ -127,13 +127,22 @@ export const WeeklyCheckCard = (): ReactElement => {
               check: check,
               isManager: role === "MANAGER"
             })} key={check.uuid}>
-            <DataTable.Row>
+            <DataTable.Row style={{ position: "relative" }}>
               <DataTable.Cell style={{ flex: check.end ? 2 : 1 }}>
-                {dayJS(check.date).format(`ddd ${
-                  dayJS(check.end).format("DD/MM/YYYY") === dayJS(check.start).format("DD/MM/YYYY") ? "DD/MM"
-                    : !check.end ? "DD/MM" : ""
-                }`)}
-                {dayJS(check.start).dayOfYear() < dayJS(check.end).dayOfYear() ? dayJS(check.end).format("→ ddd DD/MM") : ""}
+                {check.need_validation ? <Chip icon="calendar-clock">
+                  {dayJS(check.date).format(`ddd ${
+                    dayJS(check.end).format("DD/MM/YYYY") === dayJS(check.start).format("DD/MM/YYYY") ? "DD/MM"
+                      : !check.end ? "DD/MM" : ""
+                  }`)}
+                  {dayJS(check.start).dayOfYear() < dayJS(check.end).dayOfYear() ? dayJS(check.end).format("→ ddd DD/MM") : ""}
+                </Chip>
+                  : <Text>
+                    {dayJS(check.date).format(`ddd ${
+                      dayJS(check.end).format("DD/MM/YYYY") === dayJS(check.start).format("DD/MM/YYYY") ? "DD/MM"
+                        : !check.end ? "DD/MM" : ""
+                    }`)}
+                    {dayJS(check.start).dayOfYear() < dayJS(check.end).dayOfYear() ? dayJS(check.end).format("→ ddd DD/MM") : ""}
+                  </Text>}
               </DataTable.Cell>
               <DataTable.Cell numeric>{dayJS(check.start).format("HH[h ]mm[m]")}</DataTable.Cell>
               {check.end
