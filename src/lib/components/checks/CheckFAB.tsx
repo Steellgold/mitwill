@@ -6,6 +6,7 @@ import type { Animated, ColorValue, GestureResponderEvent, StyleProp, TextStyle,
 import { StyleSheet } from "react-native";
 import { dayJS } from "../../dayjs/day-js";
 import type { IconSource } from "react-native-paper/lib/typescript/components/Icon";
+import { ConfirmCheckDialog } from "../../../pages/session/company/manager/dialogs/check/ConfirmCheck";
 
 type Props = {
   visible: boolean;
@@ -33,6 +34,8 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
   const [fabGroupOpen, setFabGroupOpen] = useState(false);
   const [dialogPauseVisible, setDialogPauseVisible] = useState(false);
 
+  const [dialogCheckVisible, setDialogCheckVisible] = useState(false);
+
   const isSunday = dayJS().day() === 0;
 
   if (activeCheck) {
@@ -45,15 +48,9 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
           <Dialog.Icon icon="coffee" />
           <Dialog.Title style={styles.title}>Prise de pause</Dialog.Title>
           <Dialog.Content>
-            <Text variant="bodySmall" style={{ marginBottom: 10 }}>
-              Seules 20 minutes de pause sont automatiquement reconnues. Pour une pause plus longue, comme 45 minutes pour manger, veuillez confirmer en cliquant sur 'Confirmer'.
-            </Text>
-
-            <Text
-              style={{ color: "#fd4646" }}
-              variant="bodySmall"
-            >
-                En cliquant sur "Confirmer", vous confirmez que vous avez pris une pause de 45 minutes.
+            <Text style={{ marginBottom: 10 }}>Avez vous pris une pause à plus de 20 minutes aujourd'hui ?</Text>
+            <Text variant="bodySmall" style={{ marginTop: 10 }}>
+              <Text variant="bodySmall" style={{ fontWeight: "bold" }}>/!\ &nbsp;</Text>Si vous cliquez sur "Oui", l'action est irréversible.
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
@@ -62,9 +59,21 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
             <Button onPress={async() => {
               await setPauseTaken(true);
               setDialogPauseVisible(false);
-            }}>Confirmer</Button>
+            }}>Oui</Button>
           </Dialog.Actions>
         </Dialog>
+
+        <ConfirmCheckDialog
+          check={activeCheck}
+          visible={dialogCheckVisible}
+          hideDialog={() => setDialogCheckVisible(false)}
+          onConfirm={() => {
+            endCheck()
+              .then(() => console.log("Check ended"))
+              .catch((error) => console.error("Error (CheckFAB.tsx l31):", error));
+          }}
+          onDismiss={() => setDialogCheckVisible(false)}
+        />
 
         <FAB.Group
           open={fabGroupOpen}
@@ -78,10 +87,7 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
               icon: "clock-remove-outline",
               label: "Terminer ma journée",
               onPress: () => {
-                endCheck()
-                  .then(() => console.log("Check ended"))
-                  .catch((error) => console.error("Error (CheckFAB.tsx l31):", error));
-                console.log("FAB pressed", session?.user.user_metadata);
+                setDialogCheckVisible(true);
               }
             },
             {
