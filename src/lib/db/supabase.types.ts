@@ -221,6 +221,24 @@ export type Database = {
           }
         ];
       };
+      versions: {
+        Row: {
+          changelog: string | null;
+          version_code: string | null;
+          version_uuid: string;
+        };
+        Insert: {
+          changelog?: string | null;
+          version_code?: string | null;
+          version_uuid?: string;
+        };
+        Update: {
+          changelog?: string | null;
+          version_code?: string | null;
+          version_uuid?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       users_view: {
@@ -308,6 +326,16 @@ export type Database = {
       get_approbator: {
         Args: Record<PropertyKey, never>;
         Returns: string;
+      };
+      get_latest_version: {
+        Args: {
+          given_version_code: string;
+        };
+        Returns: {
+          version_uuid: string;
+          version_code: string;
+          changelog: string;
+        }[];
       };
       get_user: {
         Args: {
