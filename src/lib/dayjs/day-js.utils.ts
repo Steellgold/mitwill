@@ -133,6 +133,8 @@ export const calculateTimeBeyond = (start: Dayjs | string, end: Dayjs | string, 
   return { hours: "00", minutes: "00" };
 };
 
-export const addLeadingZero = (number: number): string => {
-  return number < 10 ? `0${number}` : number.toString();
+export const addLeadingZero = (number: number | string): string => {
+  if (number === 0 || number === "00") return "00";
+  if (number.toString().length === 1) return `0${number}`;
+  return number.toString();
 };
