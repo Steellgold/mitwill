@@ -130,6 +130,4 @@ export const calculateTimeBeyond = (start: Dayjs | string, end: Dayjs | string, 
   return { hours: "00", minutes: "00" };
 };
 
-export const addLeadingZero = (number: number | string): string => {
-  return number.toString();
-};
+export const addLeadingZero = (number: number): string => number < 10 ? `0${number}` : `${number}`;
