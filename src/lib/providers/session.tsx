@@ -5,6 +5,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../db/supabase";
 import type { Database } from "../db/supabase.types";
 import { dayJS } from "../dayjs/day-js";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type Check = Database["public"]["Tables"]["checks"]["Row"];
 
@@ -85,6 +86,13 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
       .select("*")
       .eq("userId", session?.user.id || "");
 
+    const dbFcmToken = await supabase.from("users").select("fcm_token").eq("userId", session?.user.id || "").single();
+    const localFcmToken = await AsyncStorage.getItem("fcmToken");
+    if (dbFcmToken.data?.fcm_token !== localFcmToken) {
+      await supabase.from("users").update({ fcm_token: localFcmToken }).eq("userId", session?.user.id || "");
+      console.debug("FCM token updated");
+    }
+
     if (error) console.error("Error:", error);
     if (!data) return console.error("No data returned from fetchUser");
 
@@ -111,9 +119,7 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
       }
     });
 
-    return (): void => {
-      subscription?.unsubscribe();
-    };
+    return (): void => subscription?.unsubscribe();
   }, [!session]);
 
   const logout = async(): Promise<void> => {
