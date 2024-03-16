@@ -10,6 +10,33 @@ import type { DiffWithWT } from "../../lib/dayjs/day-js.types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "CheckInfoScreen">;
 
+type MiniCardProps = {
+  title: string;
+  subtitle: string;
+  long?: boolean;
+  isTitle?: boolean;
+};
+
+const MiniCard = ({ title, subtitle, long = false, isTitle = false }: MiniCardProps): ReactElement => {
+  if (isTitle) {
+    return (
+      <Card.Title
+        title={title}
+        subtitle={subtitle}
+        style={{ marginTop: 10 }}
+        subtitleStyle={{ marginTop: -5 }}
+        subtitleNumberOfLines={2}
+      />
+    );
+  }
+
+  return (
+    <Card style={{ flex: long ? 2 : 1 }}>
+      <Card.Title title={title} subtitle={subtitle} subtitleStyle={{ marginTop: -5 }}/>
+    </Card>
+  );
+};
+
 export const CheckInfoScreen = ({ route }: Props): ReactElement => {
   if (!route.params) {
     return <View />;
@@ -23,90 +50,82 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
       <ScrollView>
         <View style={{ padding: 15 }}>
           <Card>
-            <Card.Title
-              style={{ marginTop: 10 }}
+            <MiniCard
               title="Pointage du jour"
               subtitle={route.params.isManager
                 ? "Données détaillées par rapport au pointage et au temps de travail de l'employé."
                 : "Données détaillées par rapport à votre pointage et votre temps de travail."}
-              subtitleNumberOfLines={2}
-              subtitleStyle={{ marginTop: -5 }}
+              isTitle
             />
 
             <View style={{ marginVertical: 5 }} />
 
             <Card.Content>
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <Card style={{ flex: 1 }}>
-                  <Card.Title
-                    title="Début de journée"
-                    subtitle={dayJS(check.start).format("HH[h]mm[m]")} subtitleStyle={{ marginTop: -5 }}/>
-                </Card>
+                <MiniCard
+                  title="Début de journée"
+                  subtitle={dayJS(check.start).format("HH[h]mm[m]")}
+                />
 
-                <Card style={{ flex: 1 }}>
-                  <Card.Title
-                    title="Fin de journée"
-                    subtitle={dayJS(check.end).format("HH[h]mm[m]")} subtitleStyle={{ marginTop: -5 }}/>
-                </Card>
+                <MiniCard
+                  title="Fin de journée"
+                  subtitle={dayJS(check.end).format("HH[h]mm[m]")}
+                />
               </View>
 
               <View style={{ marginVertical: 5 }} />
 
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <Card style={{ flex: 1 }}>
-                  <Card.Title
-                    title="Heures travaillées"
-                    subtitle={`${duration.hours} heures et ${duration.minutes} mins`} subtitleStyle={{ marginTop: -5 }}/>
-                </Card>
+                <MiniCard
+                  title="Heures travaillées"
+                  subtitle={`${duration.hours} heures et ${duration.minutes} mins`}
+                />
 
-                <Card style={{ flex: 1 }}>
-                  <Card.Title
-                    title="Pause"
-                    subtitle={
-                      check.pauseTaken
-                        ? "45 mins"
-                        : "20 mins (oblg.)"
-                    } subtitleStyle={{ marginTop: -5 }}/>
-                </Card>
+                <MiniCard
+                  title="Pause"
+                  subtitle={
+                    check.pauseTaken
+                      ? "45 mins"
+                      : "20 mins (oblg.)"
+                  }
+                />
               </View>
 
               <View style={{ marginVertical: 5 }} />
 
               <View style={{ flexDirection: "row", gap: 10 }}>
                 {(parseInt(duration.nbrNights.hours) > 0) || (parseInt(duration.nbrNights.minutes) > 0) ? (
-                  <Card style={{ flex: 1 }}>
-                    <Card.Title
-                      title="Heures de nuit"
-                      subtitle={`${duration.nbrNights.hours} heures et ${duration.nbrNights.minutes} mins`} subtitleStyle={{ marginTop: -5 }}/>
-                  </Card>
+                  <MiniCard
+                    title="Heures de nuit"
+                    subtitle={`${duration.nbrNights.hours} heures et ${duration.nbrNights.minutes} mins`}
+                  />
                 ) : (
-                  <Card style={{ flex: 1 }} disabled>
-                    <Card.Title title="Heures de nuit" subtitle="Aucune" subtitleStyle={{ marginTop: -5 }}/>
-                  </Card>
+                  <MiniCard
+                    title="Heures de nuit"
+                    subtitle="Aucune"
+                  />
                 )}
 
                 {(parseInt(duration.nbrSupps.hours) > 0) || (parseInt(duration.nbrSupps.minutes) > 0) ? (
-                  <Card style={{ flex: 1 }}>
-                    <Card.Title
-                      title="Heures supps."
-                      subtitle={`${duration.nbrSupps.hours} heures et ${duration.nbrSupps.minutes} mins`} subtitleStyle={{ marginTop: -5 }}/>
-                  </Card>
+                  <MiniCard
+                    title="Heures supps."
+                    subtitle={`${duration.nbrSupps.hours} heures et ${duration.nbrSupps.minutes} mins`}
+                  />
                 ) : (
-                  <Card style={{ flex: 1 }} disabled>
-                    <Card.Title title="Heures supps." subtitle="Aucune" subtitleStyle={{ marginTop: -5 }}/>
-                  </Card>
+                  <MiniCard
+                    title="Heures supps."
+                    subtitle="Aucune"
+                  />
                 )}
               </View>
 
               <Divider style={{ marginVertical: 15 }} />
 
-              <Card>
-                <Card.Title
-                  title="Temps de travail (sans la pause)"
-                  subtitle={`${duration.workTime.hours} heures et ${duration.workTime.minutes} mins`}
-                  subtitleStyle={{ marginTop: -5 }}
-                />
-              </Card>
+              <MiniCard
+                title="Temps de travail (sans la pause)"
+                subtitle={`${duration.workTime.hours} heures et ${duration.workTime.minutes} mins`}
+                long
+              />
             </Card.Content>
 
             <Divider style={{ marginTop: 15, marginBottom: 5 }}/>
