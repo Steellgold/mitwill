@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import messaging from "@react-native-firebase/messaging";
 import { Providers } from "./src/lib/providers";
 import { App } from "./App";
-import PushNotification from "react-native-push-notification";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { PermissionsAndroid, Platform } from "react-native";
 
@@ -31,14 +30,9 @@ export const Main = (): ReactElement => {
   }
 
   useEffect(() => {
-    messaging()
-      .requestPermission()
-      .then((authStatus) => {
-        console.log("Notification permission status:", authStatus);
-      })
-      .catch((error) => {
-        console.log("Notification permission error:", error);
-      });
+    messaging().requestPermission()
+      .then((authStatus) => console.log("Notification permission status:", authStatus))
+      .catch((error) => console.log("Notification permission error:", error));
 
     messaging().onTokenRefresh(token => {
       AsyncStorage.setItem("fcmToken", token)
@@ -46,17 +40,8 @@ export const Main = (): ReactElement => {
         .catch(() => console.log("Token not saved!", token));
     });
 
-    // Ecouter les notifications reçues lorsque l'appli est ouverte
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      PushNotification.localNotification({
-        title: remoteMessage.notification?.title,
-        message: remoteMessage.notification?.body,
-        channelId: "fcm_fallback_notification_channel",
-        messageId: remoteMessage.messageId
-      });
-    });
-
-    return unsubscribe;
+    const as = async(): Promise<void> => await AsyncStorage.setItem("fcmToken", await messaging().getToken());
+    as().then(() => console.log("Token saved!")).catch(() => console.log("Token not saved!"));
   }, []);
 
   return (
