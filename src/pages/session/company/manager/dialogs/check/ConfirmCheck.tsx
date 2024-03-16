@@ -74,12 +74,12 @@ export const ConfirmCheckDialog = ({ visible, hideDialog, onDismiss, onConfirm, 
               />
 
               <TimePicker
-                hours={value === "start" ? start.split(":")[0] : end.split(":")[0]}
-                minutes={value === "start" ? start.split(":")[1] : end.split(":")[1]}
+                hours={parseInt(value === "start" ? start.split(":")[0] : end.split(":")[0])}
+                minutes={parseInt(value === "start" ? start.split(":")[1] : end.split(":")[1])}
                 inputType="keyboard"
-                disabled={!needValidation}
                 locale="fr"
                 use24HourClock
+                focused="hours"
                 onFocusInput={() => console.log("onFocusInput")}
                 inputFontSize={38}
                 onChange={({ hours, minutes, focused }) => {
