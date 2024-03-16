@@ -20,6 +20,7 @@ export const NoCheckCard = ({ type = "daily" }: Props): ReactElement => {
                 ? `Semaine du ${dayJS().startOf("week").format("DD MMMM")} au ${dayJS().endOf("week").format("DD MMMM")}`
                 : "Session non détectée"
         }
+
         subtitle={
           type === "daily"
             ? "Vous n'avez pas encore commencé à travailler aujourd'hui ou vous n'avez pas encore pointé votre arrivée"
