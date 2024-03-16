@@ -93,9 +93,6 @@ const calculateNightHours = (start: Dayjs, end: Dayjs): { hours: string; minutes
 };
 
 const calculateWithoutPause = (time: string, pt = true): TimeBeyond => {
-  // ex time: 13h46m, 13h46
-  // si pt = true = 45m, sinon 20m
-  // du coup on retire le temps de pause et on retourne le temps sans la pause
   const timeArray = time.split("h");
   const hours = parseInt(timeArray[0]);
   const minutes = parseInt(timeArray[1].replace("m", ""));
@@ -134,7 +131,5 @@ export const calculateTimeBeyond = (start: Dayjs | string, end: Dayjs | string, 
 };
 
 export const addLeadingZero = (number: number | string): string => {
-  if (number === 0 || number === "00") return "00";
-  if (number.toString().length === 1) return `0${number}`;
   return number.toString();
 };
