@@ -10,6 +10,7 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 
 export const AppBar = ({ navigation, route }: Props): ReactElement => {
   const { session, role } = useSession();
+  const [state, setState] = useState<number>(0);
 
   if (!session && route.name === "LoginScreen" || !session && route.name === "RegisterScreen") {
     return (
@@ -23,13 +24,20 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
 
   const [waitingUsers, setWaitingUsers] = useState<number>(0);
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    const interval = setInterval(async() => {
+    // fetch and affect waiting every 5 seconds
+    const fetchWaiting = async(): Promise<void> => {
       if (role !== "MANAGER") return;
       const { data, error } = await supabase.rpc("count_users_waiting");
       if (error) console.error("Error:", error);
-      else setWaitingUsers(data);
-    }, 5000);
+      else {
+        setWaitingUsers(data);
+        setState(data);
+      }
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    const interval = setInterval(fetchWaiting, 5000);
+    void fetchWaiting();
 
     return () => clearInterval(interval);
   }, [role]);
@@ -68,7 +76,7 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
               disabled={role !== "MANAGER"}
             />
           </Tooltip>
-          {waitingUsers > 0 && <Badge style={{ position: "absolute", top: 0, right: 0 }} visible={true}>{waitingUsers}</Badge>}
+          {waitingUsers >= 0 && <Badge style={{ position: "absolute", top: 0, right: 0 }} visible={true}>{state}</Badge>}
         </View>
       )}
 
