@@ -62,33 +62,17 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
 
             <Card.Content>
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <MiniCard
-                  title="Début de journée"
-                  subtitle={dayJS(check.start).format("HH[h]mm[m]")}
-                />
-
-                <MiniCard
-                  title="Fin de journée"
-                  subtitle={dayJS(check.end).format("HH[h]mm[m]")}
-                />
+                <MiniCard title="Début de journée" subtitle={dayJS(check.start).format("HH[h]mm[m]")} />
+                <MiniCard title={
+                  `Fin ${dayJS(check.start).isSame(dayJS(check.end), "day") ? "de journée" : "le lendemain"}`
+                } subtitle={dayJS(check.end).format("HH[h]mm[m]")} />
               </View>
 
               <View style={{ marginVertical: 5 }} />
 
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <MiniCard
-                  title="Heures travaillées"
-                  subtitle={`${duration.hours} heures et ${duration.minutes} mins`}
-                />
-
-                <MiniCard
-                  title="Pause"
-                  subtitle={
-                    check.pauseTaken
-                      ? "45 mins"
-                      : "20 mins (oblg.)"
-                  }
-                />
+                <MiniCard title="Heures travaillées" subtitle={`${duration.hours} heures et ${duration.minutes} mins`} />
+                <MiniCard title="Pause" subtitle={ check.pauseTaken ? "45 mins" : "20 mins (oblg.)"} />
               </View>
 
               <View style={{ marginVertical: 5 }} />
@@ -106,17 +90,9 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
                   />
                 )}
 
-                {(parseInt(duration.nbrSupps.hours) > 0) || (parseInt(duration.nbrSupps.minutes) > 0) ? (
-                  <MiniCard
-                    title="Heures supps."
-                    subtitle={`${duration.nbrSupps.hours} heures et ${duration.nbrSupps.minutes} mins`}
-                  />
-                ) : (
-                  <MiniCard
-                    title="Heures supps."
-                    subtitle="Aucune"
-                  />
-                )}
+                {(parseInt(duration.nbrSupps.hours) > 0) || (parseInt(duration.nbrSupps.minutes) > 0)
+                  ? <MiniCard title="Heures supps." subtitle={`${duration.nbrSupps.hours} heures et ${duration.nbrSupps.minutes} mins`} />
+                  : <MiniCard title="Heures supps." subtitle="Aucune" />}
               </View>
 
               <Divider style={{ marginVertical: 15 }} />
