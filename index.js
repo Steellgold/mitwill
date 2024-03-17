@@ -5,10 +5,9 @@ import { Main } from "./Main";
 import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import PushNotification from "react-native-push-notification";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { OPEN_APPROBATION } from "./codes";
+import { OPEN_APPROBATION, OPEN_CHECKS } from "./codes";
 import { fr, registerTranslation } from "react-native-paper-dates";
 registerTranslation("fr", fr);
-
 
 PushNotification.configure({
   onRegister: function(/** token */) {
@@ -16,19 +15,18 @@ PushNotification.configure({
   },
 
   onNotification: function(notification) {
-    // console.log("NOTIFICATION:", notification);
     if (notification.data.action == OPEN_APPROBATION) {
-      AsyncStorage.setItem("notification_action", OPEN_APPROBATION)
-        .then(() => console.log("Clicked action was saved"))
-        .catch(err => console.log("Error saving clicked action", err));
+      void AsyncStorage.setItem("notification_action", OPEN_APPROBATION);
+    } else if (notification.data.action == "ChecksScreen") {
+      void AsyncStorage.setItem("notification_action", OPEN_CHECKS);
     }
 
     notification.finish(PushNotificationIOS.FetchResult.NoData);
   },
 
   onAction: function(/** notification */) {
-    // console.log("ACTION:", notification.action);
-    // console.log("NOTIFICATION:", notification);
+    // console.log("index.js", "ACTION:", notification.action);
+    // console.log("index.js", "NOTIFICATION:", notification);
   },
 
   onRegistrationError: function(/** err */) {
