@@ -23,11 +23,8 @@ export const ConfirmCheckDialog = ({ visible, hideDialog, onDismiss, onConfirm, 
   const [start, setStart] = useState<string>(dayJS(check.start).format("HH:mm:ss"));
   const [end, setEnd] = useState<string>(dayJS(check.end || new Date()).format("HH:mm:ss"));
 
-  // Quand on ouvre mettre à jour le "end" avec la date actuelle
   useEffect(() => {
-    if (visible) {
-      setEnd(dayJS(new Date()).format("HH:mm:ss"));
-    }
+    if (visible) setEnd(dayJS(new Date()).format("HH:mm:ss"));
   }, [visible]);
 
   console.log("aaaaa", { start, end });
@@ -95,7 +92,6 @@ export const ConfirmCheckDialog = ({ visible, hideDialog, onDismiss, onConfirm, 
               <Text variant="bodySmall" style={{ marginTop: 20 }}>Votre responsable sera notifié et devra les valider, mais ne vous inquiétez pas, vous pourrez pendant ce temps aller vérifier votre pointage sur l'accueil.</Text>
             </>
           )}
-
         </Dialog.Content>
 
         <Dialog.Actions>
