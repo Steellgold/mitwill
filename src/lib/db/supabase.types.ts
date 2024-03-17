@@ -299,6 +299,10 @@ export type Database = {
           userId: string;
         };
       };
+      count_pending_checks: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
       count_users_waiting: {
         Args: Record<PropertyKey, never>;
         Returns: number;
