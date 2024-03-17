@@ -9,8 +9,9 @@ import { supabase } from "../db/supabase";
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 export const AppBar = ({ navigation, route }: Props): ReactElement => {
-  const { session, role } = useSession();
+  const { session, role, isMeti } = useSession();
   const [state, setState] = useState<number>(0);
+  const [stateChecks, setStateChecks] = useState<number>(0);
 
   if (!session && route.name === "LoginScreen" || !session && route.name === "RegisterScreen") {
     return (
@@ -24,7 +25,6 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
 
   const [waitingUsers, setWaitingUsers] = useState<number>(0);
   useEffect(() => {
-    // fetch and affect waiting every 5 seconds
     const fetchWaiting = async(): Promise<void> => {
       if (role !== "MANAGER") return;
       const { data, error } = await supabase.rpc("count_users_waiting");
@@ -35,11 +35,17 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
       }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    const interval = setInterval(fetchWaiting, 5000);
-    void fetchWaiting();
+    const fetchChecksWaiting = async(): Promise<void> => {
+      if (!isMeti) return;
+      const { data, error } = await supabase.rpc("count_pending_checks");
+      if (error) console.error("Error:", error);
+      else {
+        setStateChecks(data);
+      }
+    };
 
-    return () => clearInterval(interval);
+    if (role === "MANAGER") fetchWaiting().catch(console.error);
+    if (isMeti) fetchChecksWaiting().catch(console.error);
   }, [role]);
 
   return (
@@ -77,6 +83,19 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
             />
           </Tooltip>
           {waitingUsers >= 0 && <Badge style={{ position: "absolute", top: 0, right: 0 }} visible={true}>{state}</Badge>}
+        </View>
+      )}
+
+      {role === "MANAGER" && isMeti && (
+        <View style={{ position: "relative" }}>
+          <Tooltip title="Pointages" leaveTouchDelay={200} enterTouchDelay={200}>
+            <Appbar.Action
+              icon="progress-clock"
+              onPress={() => navigation.push("ChecksApprovalsScreen")}
+              disabled={!isMeti}
+            />
+          </Tooltip>
+          {stateChecks > 0 && <Badge style={{ position: "absolute", top: 0, right: 0 }} visible={true}>{stateChecks}</Badge>}
         </View>
       )}
 
