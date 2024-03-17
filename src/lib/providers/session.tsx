@@ -100,6 +100,8 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
     setRole(data[0].role);
     setUuid(data[0].userId);
     setAvatar(data[0].avatar);
+
+    setAppLoading(false);
   };
 
   useEffect(() => {
@@ -166,6 +168,7 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
   };
 
   const refresh = async(): Promise<void> => {
+    setAppLoading(true);
     setRefreshing(true);
     setNeedDataRefresh(true);
 
