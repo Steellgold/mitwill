@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { ReactElement } from "react";
 import { AppBar } from "./src/lib/components/appbar";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -15,9 +15,12 @@ import { ActivityIndicator, Button, Text } from "react-native-paper";
 import { ApprovalsScreen } from "./src/pages/session/company/ApprovalsScreen";
 import type { Check } from "./src/lib/providers/session";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAsync } from "./src/lib/hooks/useAsync";
 import { EmployeesScreen } from "./src/pages/session/company/manager/user/EmployeesScreen";
 import { EmployeeScreen } from "./src/pages/session/company/manager/user/EmployeeScreen";
+import { ChecksApprovalsScreen } from "./src/pages/check/ApprovalsScreen";
+import { OPEN_APPROBATION } from "./codes";
+import { ApprobationNotificationBanner } from "./src/lib/components/banners/ApprobationBanner";
+import { ChecksNotificationBanner } from "./src/lib/components/banners/ChecksBanner";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -41,6 +44,7 @@ export type RootStackParamList = {
 
   // Manage screens
   ApprovalsScreen: undefined;
+  ChecksApprovalsScreen: undefined;
   // CUPlanningScreen: {
   //   date: string;
   //   planningId?: string;
@@ -60,13 +64,14 @@ export const App = (): ReactElement => {
   const { logoutLoading, appLoading, status, refresh, refreshing, session, logout } = useSession();
   const [notification_action, setNotification_action] = useState<string>("");
 
-  useAsync(async() => {
-    const notification_action = await AsyncStorage.getItem("notification_action");
-    if (notification_action) {
-      setNotification_action(notification_action);
-      await AsyncStorage.removeItem("notification_action");
-    }
-  }, []);
+  useEffect(() => {
+    const checkNotification = async(): Promise<void> => {
+      const notification_action = await AsyncStorage.getItem("notification_action");
+      if (notification_action) setNotification_action(notification_action);
+    };
+
+    checkNotification().catch(console.error);
+  }, [appLoading, logoutLoading, refreshing]);
 
   if (appLoading || logoutLoading || refreshing) {
     return (
@@ -91,25 +96,18 @@ export const App = (): ReactElement => {
               Votre compte a été refusé, veuillez contacter un administrateur ou votre reponsable si vous pensez qu'il s'agit d'une erreur</Text>
         }
 
-        <Button
-          mode="contained-tonal"
+        <Button mode="contained-tonal" icon="refresh" loading={refreshing} style={{ marginTop: 10 }}
           onPress={() => {
             if (refreshing) return;
             refresh?.();
           }}
-          icon="refresh"
-          loading={refreshing}
-          style={{ marginTop: 10 }}
         >Rafraîchir</Button>
 
-        <Button
-          mode="contained"
+        <Button mode="contained" loading={logoutLoading} style={{ marginTop: 10 }}
           onPress={() => {
             if (logoutLoading) return;
             void logout();
           }}
-          loading={logoutLoading}
-          style={{ marginTop: 10 }}
         >Se déconnecter</Button>
       </View>
     );
@@ -118,9 +116,7 @@ export const App = (): ReactElement => {
   return (
     <Stack.Navigator
       // @ts-ignore
-      initialRouteName={
-        notification_action ? notification_action : session ? "HomeScreen" : "LoginScreen"
-      }
+      initialRouteName={session ? "HomeScreen" : "LoginScreen"}
       screenOptions={{
         contentStyle: {
           backgroundColor: "#fffbfe"
@@ -131,6 +127,9 @@ export const App = (): ReactElement => {
             {/* @ts-ignore */}
             <AppBar {...props} />
             {/* {props.route.name == "HomeScreen" && <PlanningBannerNotPlanned />} */}
+
+            {notification_action == OPEN_APPROBATION && <ApprobationNotificationBanner />}
+            {notification_action == "ChecksScreen" && <ChecksNotificationBanner />}
           </>
         )
       }}
@@ -148,6 +147,7 @@ export const App = (): ReactElement => {
 
       {/* Manage screens */}
       <Stack.Screen name="ApprovalsScreen" component={ApprovalsScreen} />
+      <Stack.Screen name="ChecksApprovalsScreen" component={ChecksApprovalsScreen} />
       {/* <Stack.Screen name="CUPlanningScreen" component={CUPlanningScreen} /> */}
 
       {/* User screens (Manager) */}
