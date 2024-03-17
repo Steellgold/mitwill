@@ -1,33 +1,19 @@
+/* eslint-disable camelcase */
 /* eslint-disable max-len */
 import { Button, Dialog, FAB, Portal, Text } from "react-native-paper";
 import { useSession } from "../../hooks/useSession";
 import { useState, type ReactElement } from "react";
-import type { Animated, ColorValue, GestureResponderEvent, StyleProp, TextStyle, ViewStyle } from "react-native";
 import { StyleSheet } from "react-native";
 import { dayJS } from "../../dayjs/day-js";
-import type { IconSource } from "react-native-paper/lib/typescript/components/Icon";
 import { ConfirmCheckDialog } from "../../../pages/session/company/manager/dialogs/check/ConfirmCheck";
+import { supabase } from "../../db/supabase";
+import { OPEN_CHECKS } from "../../../../codes";
+import { fullName } from "../../some";
+import type { FABGroupActions } from "../../types/fab";
 
 type Props = {
   visible: boolean;
 };
-
-type Action = {
-  icon: IconSource;
-  label?: string;
-  color?: string;
-  labelTextColor?: string;
-  accessibilityLabel?: string;
-  accessibilityHint?: string;
-  style?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>;
-  containerStyle?: Animated.WithAnimatedValue<StyleProp<ViewStyle>>;
-  labelStyle?: StyleProp<TextStyle>;
-  labelMaxFontSizeMultiplier?: number;
-  onPress: (e: GestureResponderEvent) => void;
-  size?: "small" | "medium";
-  testID?: string;
-  rippleColor?: ColorValue;
-}
 
 export const CheckFAB = ({ visible }: Props): ReactElement => {
   const { session, activeCheck, startCheck, endCheck, setPauseTaken } = useSession();
@@ -67,14 +53,48 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
           check={activeCheck}
           visible={dialogCheckVisible}
           hideDialog={() => setDialogCheckVisible(false)}
-          onConfirm={({ start, end, needValidation }) => {
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          onConfirm={async({ start, end, needValidation }): Promise<void> => {
+            const Vstart = dayJS().format("YYYY-MM-DD") + "T" + start;
+            const Vend = dayJS().format("YYYY-MM-DD") + "T" + end;
+
+            const needValidationFinal = needValidation
+              || dayJS(Vend).diff(dayJS(Vstart), "minute") > 465
+              || dayJS(Vend).diff(dayJS(Vstart), "minute") > 440;
+
             endCheck(
-              needValidation,
-              needValidation ? `${dayJS().format("YYYY-MM-DD")}T${start}` : "",
-              needValidation ? `${dayJS().format("YYYY-MM-DD")}T${end}` : ""
+              needValidationFinal,
+              needValidationFinal ? Vstart : "",
+              needValidationFinal ? Vend : ""
             )
               .then(() => console.log("Check ended"))
-              .catch((error) => console.error("Error (CheckFAB.tsx l31):", error));
+              .catch((error) => console.error("Error:", error));
+
+            if (needValidationFinal) {
+              await supabase
+                .functions
+                .invoke("get_approbator")
+                .then(async(response) => {
+                  await supabase
+                    .functions
+                    .invoke("push", {
+                      body: {
+                        record: {
+                          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                          user_id: response.data.userId || "",
+                          title: "Validation de pointage",
+                          body: `Un pointage a été effectué par ${fullName(session?.user.user_metadata)} et a besoin d'être validé.`,
+                          action: OPEN_CHECKS
+                        }
+                      }
+                    })
+                    .then(() => console.log("Notification sent!"))
+                    .catch((error) => console.error("Error (handleRegister in RegisterScreen.tsx l39):", error));
+                })
+                .catch((error) => {
+                  console.error("Error (handleRegister in RegisterScreen.tsx l39):", error);
+                });
+            }
           }}
           onDismiss={() => setDialogCheckVisible(false)}
         />
@@ -107,7 +127,7 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
               },
               onPress: () => setDialogPauseVisible(true)
             }
-          ] as Action[]}
+          ] as FABGroupActions[]}
         />
       </Portal>
     );
