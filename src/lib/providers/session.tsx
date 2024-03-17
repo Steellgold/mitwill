@@ -35,6 +35,7 @@ export type SessionContextType = {
 
   role: Database["public"]["Enums"]["Role"];
   status: Database["public"]["Enums"]["Status"];
+  isMeti: boolean;
 
   avatar: string | null;
   setAvatar: (value: string) => void;
@@ -62,6 +63,7 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
 
   const [status, setStatus] = useState<Database["public"]["Enums"]["Status"]>("WAITING");
   const [role, setRole] = useState<Database["public"]["Enums"]["Role"]>("EMPLOYEE");
+  const [isMeti, setIsMeti] = useState<boolean>(false);
 
   const fetchChecks = async(): Promise<void> => {
     if (!session) return console.log("No session");
@@ -100,6 +102,7 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
     setRole(data[0].role);
     setUuid(data[0].userId);
     setAvatar(data[0].avatar);
+    setIsMeti(data[0].is_meti || false);
 
     setAppLoading(false);
   };
@@ -217,6 +220,7 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
 
       role,
       status,
+      isMeti,
 
       uuid,
 
