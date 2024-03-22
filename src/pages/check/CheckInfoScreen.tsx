@@ -17,7 +17,7 @@ type MiniCardProps = {
   isTitle?: boolean;
 };
 
-const MiniCard = ({ title, subtitle, long = false, isTitle = false }: MiniCardProps): ReactElement => {
+export const MiniCard = ({ title, subtitle, long = false, isTitle = false }: MiniCardProps): ReactElement => {
   if (isTitle) {
     return (
       <Card.Title
@@ -41,6 +41,8 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
   if (!route.params) {
     return <View />;
   }
+
+  console.log(route.params);
 
   const check = route.params.check;
   const duration: DiffWithWT = calculate(route.params.check);
@@ -104,14 +106,20 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
               />
             </Card.Content>
 
-            <Divider style={{ marginTop: 15, marginBottom: 5 }}/>
+            {route.params.isManager ? (
+              <View style={{ marginVertical: 10 }} />
+            ) : (
+              <>
+                <Divider style={{ marginTop: 15, marginBottom: 5 }}/>
 
-            <View style={{ padding: 10, flexDirection: "column", gap: 5 }}>
-              <View style={{ flexDirection: "row", gap: 3, alignItems: "center", flex: 1 }}>
-                <Avatar.Icon color="#fd7e46" size={24} icon="information" style={{ backgroundColor: "transparent" }}/>
-                <Text style={styles.orange}>Ces informations sont visibles par votre employeur.</Text>
-              </View>
-            </View>
+                <View style={{ padding: 10, flexDirection: "column", gap: 5 }}>
+                  <View style={{ flexDirection: "row", gap: 3, alignItems: "center", flex: 1 }}>
+                    <Avatar.Icon color="#fd7e46" size={24} icon="information" style={{ backgroundColor: "transparent" }}/>
+                    <Text style={styles.orange}>Ces informations sont visibles par votre employeur.</Text>
+                  </View>
+                </View>
+              </>
+            )}
           </Card>
 
           <View style={{ marginVertical: 10 }} />
