@@ -1,7 +1,7 @@
 import type { Check } from "../providers/session";
 import type { Dayjs } from "./day-js";
 import { dayJS } from "./day-js";
-import type { DiffWithWT, SimpleDiff, TimeBeyond } from "./day-js.types";
+import type { DiffWithWT, PauseDiff, SimpleDiff, TimeBeyond } from "./day-js.types";
 
 export const isWeekend = (date: Date): boolean => {
   const day = date.getDay();
@@ -47,6 +47,36 @@ export const calculate = (check: Check): DiffWithWT => {
     nbrSupps,
     nbrNights,
     workTime: calculateWithoutPause(duration.hours().toString() + "h" + duration.minutes().toString(), check.pauseTaken)
+  };
+};
+
+export const calculateMultiple = (checks: Check[]): DiffWithWT => {
+  let totalSeconds = 0;
+  let totalNbrSupps = { hours: "00", minutes: "00" };
+  let totalNbrNights = { hours: "00", minutes: "00" };
+  let totalWorkTime = { hours: "00", minutes: "00" };
+
+  checks.forEach(check => {
+    const { days, hours, minutes, seconds, nbrSupps, nbrNights, workTime } = calculate(check);
+
+    totalSeconds += parseInt(days) * 86400 + parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+
+    totalNbrSupps = sumTimeBeyond(totalNbrSupps, nbrSupps);
+    totalNbrNights = sumTimeBeyond(totalNbrNights, nbrNights);
+    totalWorkTime = sumTimeBeyond(totalWorkTime, workTime);
+  });
+
+  // Convertir totalSeconds en jours, heures, minutes, secondes
+  const totalDuration = dayJS.duration(totalSeconds, "seconds");
+
+  return {
+    days: totalDuration.days().toString(),
+    hours: totalDuration.hours().toString(),
+    minutes: totalDuration.minutes().toString(),
+    seconds: totalDuration.seconds().toString(),
+    nbrSupps: totalNbrSupps,
+    nbrNights: totalNbrNights,
+    workTime: totalWorkTime
   };
 };
 
@@ -130,4 +160,47 @@ export const calculateTimeBeyond = (start: Dayjs | string, end: Dayjs | string, 
   return { hours: "00", minutes: "00" };
 };
 
+const sumTimeBeyond = (time1: TimeBeyond, time2: TimeBeyond): TimeBeyond => {
+  let hours = parseInt(time1.hours) + parseInt(time2.hours);
+  let minutes = parseInt(time1.minutes) + parseInt(time2.minutes);
+
+  if (minutes >= 60) {
+    hours += Math.floor(minutes / 60);
+    minutes %= 60;
+  }
+
+  return {
+    hours: addLeadingZero(hours),
+    minutes: addLeadingZero(minutes)
+  };
+};
+
 export const addLeadingZero = (number: number): string => number < 10 ? `0${number}` : `${number}`;
+
+export const calculateTotalPauseTimeDetailed = (checks: Check[]): PauseDiff => {
+  let totalPauseMinutes = 0;
+  let nbr20Taken = 0;
+  let nbr45Taken = 0;
+
+  checks.forEach(check => {
+    if (check.pauseTaken) {
+      totalPauseMinutes += 45;
+      nbr45Taken += 1;
+    } else {
+      totalPauseMinutes += 20;
+      nbr20Taken += 1;
+    }
+  });
+
+  const hours = Math.floor(totalPauseMinutes / 60);
+  const minutes = totalPauseMinutes % 60;
+
+  return {
+    days: "00",
+    hours: hours.toString().padStart(2, "0"),
+    minutes: minutes.toString().padStart(2, "0"),
+    seconds: "00",
+    nbr20Taken,
+    nbr45Taken
+  };
+};
