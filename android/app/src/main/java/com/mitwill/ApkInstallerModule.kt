@@ -1,12 +1,11 @@
 package fr.gaetanhus.mitwill
 
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.FileProvider
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import java.io.File
 
 class ApkInstallerModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -17,9 +16,15 @@ class ApkInstallerModule(reactContext: ReactApplicationContext) : ReactContextBa
     @ReactMethod
     fun installApk(apkFilePath: String) {
         val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(Uri.parse(apkFilePath), "application/vnd.android.package-archive")
+            val apkUri = FileProvider.getUriForFile(
+                reactApplicationContext,
+                "${BuildConfig.APPLICATION_ID}.provider",
+                File(apkFilePath)
+            )
+            setDataAndType(apkUri, "application/vnd.android.package-archive")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        currentActivity?.startActivity(intent) ?: reactApplicationContext.startActivity(intent)
+        reactApplicationContext.startActivity(intent)
     }
 }
