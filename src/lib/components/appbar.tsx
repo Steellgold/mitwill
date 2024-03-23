@@ -44,6 +44,11 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
       }
     };
 
+    setInterval(() => {
+      if (role === "MANAGER") fetchWaiting().catch(console.error);
+      if (isMeti) fetchChecksWaiting().catch(console.error);
+    }, 1000);
+
     if (role === "MANAGER") fetchWaiting().catch(console.error);
     if (isMeti) fetchChecksWaiting().catch(console.error);
   }, [role]);
@@ -82,7 +87,7 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
               disabled={role !== "MANAGER"}
             />
           </Tooltip>
-          {waitingUsers >= 0 && <Badge style={{ position: "absolute", top: 0, right: 0 }} visible={true}>{state}</Badge>}
+          {waitingUsers > 0 && <Badge style={{ position: "absolute", top: 0, right: 0 }} visible={true}>{state}</Badge>}
         </View>
       )}
 
@@ -92,7 +97,7 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
             <Appbar.Action
               icon="progress-clock"
               onPress={() => navigation.push("ChecksApprovalsScreen")}
-              disabled={!isMeti}
+              disabled={!isMeti || role !== "MANAGER"}
             />
           </Tooltip>
           {stateChecks > 0 && <Badge style={{ position: "absolute", top: 0, right: 0 }} visible={true}>{stateChecks}</Badge>}
