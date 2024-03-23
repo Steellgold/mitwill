@@ -10,22 +10,21 @@ import { PermissionsAndroid, Platform } from "react-native";
 export const Main = (): ReactElement => {
   if (Platform.OS === "android") {
     try {
-      PermissionsAndroid.check("android.permission.POST_NOTIFICATIONS").then(
-        response => {
-          if (!response) {
+      PermissionsAndroid.check("android.permission.POST_NOTIFICATIONS")
+        .then((granted) => {
+          if (!granted) {
             PermissionsAndroid.request("android.permission.POST_NOTIFICATIONS")
-              .then(granted => {
-                if (granted === PermissionsAndroid.RESULTS.GRANTED) console.log("You can use the notification");
-                else console.log("Notification permission denied");
+              .then((granted) => {
+                if (!granted) {
+                  console.error("Notification permission denied!");
+                }
               })
-              .catch(err => {
-                console.log(err);
-              });
+              .catch((error) => console.error("Notification permission error:", error));
           }
-        }
-      ).catch(err => console.log("Notification Error=====>", err));
-    } catch (err) {
-      console.log(err);
+        })
+        .catch((error) => console.error("Notification permission error:", error));
+    } catch (error) {
+      console.error("Notification permission error:", error);
     }
   }
 
