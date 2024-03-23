@@ -100,7 +100,7 @@ export const WeeklyCheckCard = (): ReactElement => {
           </DataTable.Row>
         ) : checks.length === 0 ? (
           <>
-            {dayJS(week).isAfter(dayJS(), "week") && dayJS(week).diff(dayJS(), "week") > 6 ? (
+            {dayJS(week).isAfter(dayJS(), "week") && dayJS(week).diff(dayJS(), "week") >= 3 ? (
               <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                 <GifImage
                   source={{ uri: "https://i0.wp.com/quartierdudigital.fr/wp-content/uploads/2015/10/8.gif" }}
