@@ -22,6 +22,7 @@ import { OPEN_APPROBATION } from "./codes";
 import { ApprobationNotificationBanner } from "./src/lib/components/banners/ApprobationBanner";
 import { ChecksNotificationBanner } from "./src/lib/components/banners/ChecksBanner";
 import type { Database } from "./src/lib/db/supabase.types";
+import { UpdateBanner } from "./src/lib/components/banners/UpdateBanner";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -126,6 +127,7 @@ export const App = (): ReactElement => {
 
             {notification_action == OPEN_APPROBATION && <ApprobationNotificationBanner />}
             {notification_action == "ChecksScreen" && <ChecksNotificationBanner />}
+            <UpdateBanner />
           </>
         )
       }}
