@@ -5,6 +5,7 @@ import { useAsync } from "../../../../../lib/hooks/useAsync";
 import { supabase } from "../../../../../lib/db/supabase";
 import type { Database } from "../../../../../lib/db/supabase.types";
 import { avatarTime, getAvatar } from "../../../../../lib/dicebear";
+import { useNavigation } from "@react-navigation/native";
 
 type User = Database["public"]["Tables"]["users"]["Row"];
 
@@ -12,6 +13,8 @@ export const EmployeesScreen = (): ReactElement => {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState<string>("");
+
+  const { navigate } = useNavigation();
 
   const filteredUsers = users.filter((user) => {
     return user.firstName?.toLowerCase().includes(search.toLowerCase()) || user.lastName?.toLowerCase().includes(search.toLowerCase());
@@ -47,7 +50,8 @@ export const EmployeesScreen = (): ReactElement => {
 
       {filteredUsers.map((user) => (
         <Card key={user.userId}>
-          <TouchableRipple borderless style={{ borderRadius: 10, padding: 15 }} onPress={() => console.log("Go to employee")}>
+          {/* @ts-ignore */}
+          <TouchableRipple borderless style={{ borderRadius: 10, padding: 15 }} onPress={() => navigate("EmployeeScreen", { ...user })}>
             <>
               <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                 <View>
