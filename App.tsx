@@ -21,6 +21,7 @@ import { ChecksApprovalsScreen } from "./src/pages/check/ApprovalsScreen";
 import { OPEN_APPROBATION } from "./codes";
 import { ApprobationNotificationBanner } from "./src/lib/components/banners/ApprobationBanner";
 import { ChecksNotificationBanner } from "./src/lib/components/banners/ChecksBanner";
+import type { Database } from "./src/lib/db/supabase.types";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -52,12 +53,7 @@ export type RootStackParamList = {
 
   // User screens (Manager)
   EmployeesScreen: undefined;
-  EmployeeScreen: {
-    userId: string;
-    firstName: string;
-    lastName: string;
-    avatar: string;
-  };
+  EmployeeScreen: Database["public"]["Tables"]["users"]["Row"];
 };
 
 export const App = (): ReactElement => {
