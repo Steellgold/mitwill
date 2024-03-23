@@ -7,7 +7,7 @@ export const getAvatar = (firstName: string, lastName: string): string => {
 export const avatarTime = (url: string | null): string => {
   if (!url) return getAvatar("John", "Doe");
 
-  const dateWithTime = dayJS().format("YYYY-MM-DDTHH:mm:ss");
+  const dateWithTime = dayJS().format("YYYY-MM-DDTHH");
   if (url.includes("?")) {
     return `${url}&time=${dateWithTime}`;
   }
