@@ -4,7 +4,7 @@ import { NoCheckCard } from "./NoCheckCard";
 import { useAsync } from "../../hooks/useAsync";
 import { supabase } from "../../db/supabase";
 import { dayJS } from "../../dayjs/day-js";
-import { ActivityIndicator, Avatar, Button, Card, Chip, DataTable, Icon, IconButton, Text, TouchableRipple } from "react-native-paper";
+import { ActivityIndicator, Button, Card, Chip, DataTable, Icon, IconButton, Text, TouchableRipple } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import type { Check } from "../../providers/session";
 import { View } from "react-native";
