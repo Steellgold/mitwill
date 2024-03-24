@@ -23,6 +23,7 @@ import { ApprobationNotificationBanner } from "./src/lib/components/banners/Appr
 import { ChecksNotificationBanner } from "./src/lib/components/banners/ChecksBanner";
 import type { Database } from "./src/lib/db/supabase.types";
 import { UpdateBanner } from "./src/lib/components/banners/UpdateBanner";
+import { Version } from "./src/lib/version";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -79,6 +80,8 @@ export const App = (): ReactElement => {
             ? <Text>Déconnexion en cours...</Text>
             : <Text>Chargement de l'application...</Text>
         }
+
+        <Version />
       </View>
     );
   }
