@@ -44,11 +44,6 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
       }
     };
 
-    setInterval(() => {
-      if (role === "MANAGER") fetchWaiting().catch(console.error);
-      if (isMeti) fetchChecksWaiting().catch(console.error);
-    }, 1000);
-
     if (role === "MANAGER") fetchWaiting().catch(console.error);
     if (isMeti) fetchChecksWaiting().catch(console.error);
   }, [role]);

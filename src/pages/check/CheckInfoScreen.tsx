@@ -42,8 +42,6 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
     return <View />;
   }
 
-  console.log(route.params);
-
   const check = route.params.check;
   const duration: DiffWithWT = calculate(route.params.check);
 
