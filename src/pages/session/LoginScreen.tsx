@@ -5,6 +5,7 @@ import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import type { RootStackParamList } from "../../../App";
 import { useSession } from "../../lib/hooks/useSession";
 import { supabase } from "../../lib/db/supabase";
+import { Version } from "../../lib/version";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -35,7 +36,7 @@ export const LoginScreen = ({ navigation }: Props): ReactElement => {
   };
 
   return (
-    <View style={{ padding: 10 }}>
+    <View style={{ padding: 10, height: "100%" }}>
       <View style={{ height: 40 }}/>
 
       {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
@@ -81,6 +82,8 @@ export const LoginScreen = ({ navigation }: Props): ReactElement => {
       <Text style={{ marginTop: 5, alignSelf: "center" }}>Tu n'as pas de compte ?
         <Text style={{ color: "#fd7e46" }} onPress={() => navigation.push("RegisterScreen")}>{" "}Inscris-toi</Text>
       </Text>
+
+      <Version />
     </View>
   );
 };

@@ -10,6 +10,7 @@ import messaging from "@react-native-firebase/messaging";
 import { IS_DEV } from "../../../v";
 import { OPEN_APPROBATION } from "../../../codes";
 import { getAvatar } from "../../lib/dicebear";
+import { Version } from "../../lib/version";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -69,6 +70,7 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
           .invoke("push", {
             body: {
               record: {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                 user_id: response.data.userId || "",
                 title: "Nouvelle inscription",
                 body: `${firstName} ${lastName} s'est inscrit, cliquez ici pour accéder à la page d'approbation`,
@@ -110,7 +112,7 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
   };
 
   return (
-    <View style={{ padding: 10 }}>
+    <View style={{ padding: 10, height: "100%" }}>
       <View style={{ height: 40 }}/>
 
       {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
@@ -176,6 +178,8 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
       <Text style={{ marginTop: 5, alignSelf: "center" }}>Tu as déjà un compte ?
         <Text style={{ color: "#fd7e46" }} onPress={() => navigation.push("LoginScreen")}>{" "}Connecte-toi</Text>
       </Text>
+
+      <Version />
     </View>
   );
 };
