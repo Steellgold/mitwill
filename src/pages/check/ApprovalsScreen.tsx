@@ -45,6 +45,8 @@ export const ChecksApprovalsScreen = (): ReactElement => {
       return;
     }
 
+
+    console.log(data);
     if (!data) return;
 
     const getEmployee = async(userId: string): Promise<Database["public"]["Tables"]["users"]["Row"] | null> => {
@@ -57,6 +59,7 @@ export const ChecksApprovalsScreen = (): ReactElement => {
         console.error(error);
         return null;
       }
+
       return data?.[0];
     };
 
