@@ -96,13 +96,20 @@ export const calculateDiff = (start: Dayjs | string, end: Dayjs | string): Simpl
 
 const calculateNightHours = (start: Dayjs, end: Dayjs): { hours: string; minutes: string } => {
   let nightStart = start.set({ hour: 21, minute: 30, second: 0 });
+  let nightEnd = start.set({ hour: 6, minute: 0, second: 0 }).add(1, "day");
+
+  if (start.isAfter(nightStart) || start.format("YYYY-MM-DD") === end.format("YYYY-MM-DD") && end.isBefore(nightEnd)) {
+    nightStart = start.set({ hour: 21, minute: 30, second: 0 });
+    nightEnd = start.set({ hour: 6, minute: 0, second: 0 }).add(1, "day");
+  }
+
   if (start.isAfter(nightStart)) {
     nightStart = nightStart.add(1, "day");
+    nightEnd = nightEnd.add(1, "day");
   }
-  const nightEnd = nightStart.clone().set({ hour: 6, minute: 0, second: 0 }).add(1, "day");
 
-  if (start.isBefore(nightStart) && end.isAfter(nightStart)) {
-    nightStart = start.clone().set({ hour: 21, minute: 30, second: 0 });
+  if (start.format("YYYY-MM-DD") === end.format("YYYY-MM-DD") && end.isBefore(start.set({ hour: 6, minute: 0, second: 0 }).add(1, "day"))) {
+    nightEnd = start.set({ hour: 6, minute: 0, second: 0 }).add(1, "day");
   }
 
   let nightHours = 0;
