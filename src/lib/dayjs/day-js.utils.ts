@@ -94,7 +94,6 @@ export const calculateDiff = (start: Dayjs | string, end: Dayjs | string): Simpl
 };
 
 const calculateNightHours = (start: Dayjs, end: Dayjs): { hours: string; minutes: string } => {
-  // Définir les heures de début et de fin de la période de nuit
   let nightStart = start.clone().set({ hour: 21, minute: 30, second: 0 });
   let nightEnd = start.clone().set({ hour: 6, minute: 0, second: 0 }).add(1, "day");
 
