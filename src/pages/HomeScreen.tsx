@@ -33,6 +33,8 @@ export const HomeScreen = ({ navigation }: Props): ReactElement => {
           <CheckCard />
           <WeeklyCheckCard />
 
+          <View style={{ height: 100 }} />
+
           <CheckFAB visible={isFocused} />
         </View>
       </ScrollView>
