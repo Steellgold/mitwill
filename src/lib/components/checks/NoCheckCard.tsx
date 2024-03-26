@@ -25,7 +25,7 @@ export const NoCheckCard = ({ type = "daily" }: Props): ReactElement => {
           type === "daily"
             ? "Vous n'avez pas encore commencé à travailler aujourd'hui ou vous n'avez pas encore pointé votre arrivée"
             : type === "daily-already-ended"
-              ? "Vore journée de travail est déjà terminée, vous ne pouvez plus pointer"
+              ? "Vous avez déjà pointé votre départ pour aujourd'hui, vous pouvez à nouveau pointer votre arrivée si besoin"
               : type === "weekly"
                 ? "Vous n'avez pas encore pointé votre arrivée cette semaine, pensez à le faire tous les jours"
                 : "La session n'est pas détectée, redémarrez l'application ou reconnectez-vous"
