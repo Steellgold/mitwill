@@ -3,7 +3,6 @@ import { Image, Linking, View } from "react-native";
 import { ActivityIndicator, Banner, Text } from "react-native-paper";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../../../../App";
-import { dayJS } from "../../../../../lib/dayjs/day-js";
 import { avatarTime } from "../../../../../lib/dicebear";
 import type { Database } from "../../../../../lib/db/supabase.types";
 import { useSession } from "../../../../../lib/hooks/useSession";
@@ -13,7 +12,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "EmployeeScreen">;
 
 const banner = (employee: Database["public"]["Tables"]["users"]["Row"]): ReactElement => (
   <Banner visible style={{ flexDirection: "row" }} icon={() => (
-    <Image source={{ uri: avatarTime(employee.avatar) }} style={{ width: 64, height: 64 }} />
+    <Image source={{ uri: avatarTime(employee.avatar) }} style={{ width: 64, height: 64, borderRadius: 10 }} />
   )} actions={[
     {
       icon: "email-send",
@@ -23,7 +22,7 @@ const banner = (employee: Database["public"]["Tables"]["users"]["Row"]): ReactEl
   ]}>
     <View style={{ marginLeft: 10 }}>
       <Text variant="bodyLarge">{employee.firstName} {employee.lastName}</Text>
-      <Text variant="bodySmall">Employé(e) depuis le {dayJS(employee.approvedAt).format("DD/MM/YYYY")}</Text>
+      <Text variant="bodySmall" style={{ opacity: 0.5, fontWeight: "100" }}>{employee.email}</Text>
     </View>
   </Banner>
 );
