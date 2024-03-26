@@ -19,6 +19,8 @@ PushNotification.configure({
       void AsyncStorage.setItem("notification_action", OPEN_APPROBATION);
     } else if (notification.data.action == "ChecksScreen") {
       void AsyncStorage.setItem("notification_action", OPEN_CHECKS);
+    } else {
+      void AsyncStorage.setItem("notification_action", "");
     }
 
     notification.finish(PushNotificationIOS.FetchResult.NoData);
