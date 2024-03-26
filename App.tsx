@@ -10,7 +10,7 @@ import { SessionScreen } from "./src/pages/session/SessionScreen";
 import { RegisterScreen } from "./src/pages/session/RegisterScreen";
 import { CheckInfoScreen } from "./src/pages/check/CheckInfoScreen";
 import { useSession } from "./src/lib/hooks/useSession";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { ActivityIndicator, Button, Text } from "react-native-paper";
 import { ApprovalsScreen } from "./src/pages/session/company/ApprovalsScreen";
 import type { Check } from "./src/lib/providers/session";
@@ -129,7 +129,7 @@ export const App = (): ReactElement => {
             {/* {props.route.name == "HomeScreen" && <PlanningBannerNotPlanned />} */}
 
             {notification_action == OPEN_APPROBATION && <ApprobationNotificationBanner />}
-            {notification_action == "ChecksScreen" && <ChecksNotificationBanner />}
+            {Platform.OS === "android" && props.route.name == "HomeScreen" && <ChecksNotificationBanner />}
             <UpdateBanner />
           </>
         )
