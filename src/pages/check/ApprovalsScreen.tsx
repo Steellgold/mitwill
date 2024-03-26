@@ -8,15 +8,19 @@ import { supabase } from "../../lib/db/supabase";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { dayJS } from "../../lib/dayjs/day-js";
 import { useNavigation } from "@react-navigation/native";
+import { ChooseDeclineTimeDialog } from "../session/company/manager/dialogs/ChooseDeclineTime";
+import { NO_ACTION } from "../../../codes";
 
 export const ChecksApprovalsScreen = (): ReactElement => {
-  const { session, role } = useSession();
+  const { session, role, firstName, lastName } = useSession();
   const { navigate } = useNavigation();
 
   const [checks, setChecks] = useState<{
     employee: Database["public"]["Tables"]["users"]["Row"] | null;
     check: Database["public"]["Tables"]["checks"]["Row"];
   }[] | null>(null);
+
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   if (!session) {
     return (
@@ -83,8 +87,30 @@ export const ChecksApprovalsScreen = (): ReactElement => {
     setChecks((checks) => checks?.filter((c) => c.check.uuid !== check.uuid) || []);
   };
 
-  const rejectCheck = async(check: Database["public"]["Tables"]["checks"]["Row"]): Promise<void> => {
-    const { error } = await supabase.from("checks").update({ need_validation: false }).eq("uuid", check.uuid);
+  const rejectCheck = async(check: Database["public"]["Tables"]["checks"]["Row"], start: string, end: string): Promise<void> => {
+    const { error } = await supabase
+      .from("checks")
+      .update({
+        need_validation: false,
+        start: dayJS(check.start).format("YYYY-MM-DD") + "T" + start,
+        end: dayJS(check.end).format("YYYY-MM-DD") + "T" + end
+      })
+      .eq("uuid", check.uuid);
+
+    await supabase
+      .functions
+      .invoke("push", {
+        body: {
+          record: {
+            user_id: check.userId,
+            title: "Pointage modifié",
+            body: `Votre pointage du ${dayJS(check.date).format("DD/MM/YYYY")} a été modifié par ${firstName} ${lastName}`,
+            action: NO_ACTION
+          }
+        }
+      })
+      .then(() => console.log("Notification sent!"))
+      .catch((error) => console.error("Error (handleRegister in RegisterScreen.tsx l39):", error));
 
     if (error) {
       console.error(error);
@@ -105,7 +131,7 @@ export const ChecksApprovalsScreen = (): ReactElement => {
 
           <View>
             {checks?.map(({ employee, check }, index) => (
-              <Card key={index}>
+              <Card key={index} style={{ marginVertical: 5 }}>
                 <Card.Title
                   title={`Pointage de l'employé ${employee?.firstName} ${employee?.lastName}`}
                   subtitle={dayJS(check.date).format("DD/MM/YYYY")}
@@ -148,9 +174,22 @@ export const ChecksApprovalsScreen = (): ReactElement => {
                     Accepter
                   </Button>
 
+                  <ChooseDeclineTimeDialog
+                    visible={showEditDialog}
+                    hideDialog={() => setShowEditDialog(false)}
+                    onDismiss={() => setShowEditDialog(false)}
+                    onConfirm={({ end, start }) => {
+                      setShowEditDialog(false);
+                      void rejectCheck(check, start, end);
+                    }}
+                    startAt={dayJS(check.start).format("HH:mm:ss")}
+                    endAt={dayJS(check.end).format("HH:mm:ss")}
+                    check={check}
+                  />
+
                   <Button
                     mode="contained-tonal"
-                    onPress={() => void rejectCheck(check)}
+                    onPress={() => setShowEditDialog(true)}
                     icon="close-circle-outline">
                     Refuser
                   </Button>
