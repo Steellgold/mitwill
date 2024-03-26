@@ -12,6 +12,8 @@ export const ChecksNotificationBanner = (): ReactElement => {
 
   const [notification, setNotification] = useState("");
 
+  console.log(name);
+
   useAsync(async() => {
     const notification = await AsyncStorage.getItem("notification_action");
     if (notification) setNotification(notification);
