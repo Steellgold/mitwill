@@ -1,7 +1,7 @@
 import { dayJS } from "./dayjs/day-js";
 
 export const getAvatar = (firstName: string, lastName: string): string => {
-  return `https://api.dicebear.com/7.x/initials/png?seed=${firstName}+${lastName}&backgroundColor=fd7e46`;
+  return `https://api.dicebear.com/7.x/initials/png?seed=${firstName}+${lastName}`;
 };
 
 export const avatarTime = (url: string | null): string => {
