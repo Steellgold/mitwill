@@ -15,7 +15,7 @@ import { Version } from "../../lib/version";
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 export const RegisterScreen = ({ navigation }: Props): ReactElement => {
-  const { session } = useSession();
+  const { session, refresh } = useSession();
   if (session) {
     navigation.popToTop();
     navigation.navigate("HomeScreen");
@@ -166,11 +166,11 @@ export const RegisterScreen = ({ navigation }: Props): ReactElement => {
           if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W|_)[A-Za-z\d\W_]{8,}$/)) {
             return setError("Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial");
           }
+
           if (firstName.length < 2 || lastName.length < 2) return setError("Le prénom et le nom doivent contenir au moins 2 caractères");
 
-
           if (!loading) handleRegister()
-            .then(() => console.log("Registered"))
+            .then(() => refresh?.())
             .catch((error) => console.error("Error (handleRegister in RegisterScreen.tsx l107):", error));
         }} style={{ marginTop: 10 }}>
         Inscription à l'application

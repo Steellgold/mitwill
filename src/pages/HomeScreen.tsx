@@ -13,6 +13,7 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 export const HomeScreen = ({ navigation }: Props): ReactElement => {
   const { session, refresh } = useSession();
   if (!session) navigation.navigate("LoginScreen");
+
   const isFocused = useIsFocused();
   const [refreshing, setRefreshing] = useState(false);
 

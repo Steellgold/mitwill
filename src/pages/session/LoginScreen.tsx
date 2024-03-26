@@ -10,11 +10,8 @@ import { Version } from "../../lib/version";
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 export const LoginScreen = ({ navigation }: Props): ReactElement => {
-  const { session } = useSession();
-  if (session) {
-    navigation.popToTop();
-    navigation.navigate("HomeScreen");
-  }
+  const { session, refresh } = useSession();
+  if (session) navigation.navigate("HomeScreen");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,7 +71,7 @@ export const LoginScreen = ({ navigation }: Props): ReactElement => {
           setLoading(true);
 
           if (!loading) handleLogin()
-            .then(() => console.log("Logged in"))
+            .then(() => refresh?.())
             .catch((error) => console.error("ErrorA:", error));
         }} style={{ marginTop: 10 }}>
         Connexion à l'application
