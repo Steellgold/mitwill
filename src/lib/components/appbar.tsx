@@ -13,17 +13,8 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
   const [state, setState] = useState<number>(0);
   const [stateChecks, setStateChecks] = useState<number>(0);
 
-  if (!session && route.name === "LoginScreen" || !session && route.name === "RegisterScreen") {
-    return (
-      <Appbar>
-        {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-        <Image source={require("./assets/logo.jpg")} style={{ width: 100, height: 40 }} />
-        <Appbar.Content title="" />
-      </Appbar>
-    );
-  }
-
   const [waitingUsers, setWaitingUsers] = useState<number>(0);
+
   useEffect(() => {
     const fetchWaiting = async(): Promise<void> => {
       if (role !== "MANAGER") return;
@@ -47,6 +38,16 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
     if (role === "MANAGER") fetchWaiting().catch(console.error);
     if (isMeti) fetchChecksWaiting().catch(console.error);
   }, [role]);
+
+  if (!session && route.name === "LoginScreen" || !session && route.name === "RegisterScreen") {
+    return (
+      <Appbar>
+        {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+        <Image source={require("./assets/logo.jpg")} style={{ width: 100, height: 40 }} />
+        <Appbar.Content title="" />
+      </Appbar>
+    );
+  }
 
   return (
     <Appbar>
