@@ -75,9 +75,9 @@ export const UpdateBanner = (): ReactElement => {
           <Dialog.Title>Mise à jour disponible</Dialog.Title>
 
           <Dialog.Content>
-            <Text style={{ margin: 10 }}>
-            Nouvelle version : {updateAvailable.version_code}
-            </Text>
+            <Text style={{ margin: 10 }}>Nouvelle version : {updateAvailable.version_code}</Text>
+
+            <Text style={{ margin: 10 }}>{updateAvailable.changelog || "Aucun changelog (ne devrait pas arriver)"}</Text>
 
             <ProgressBar animatedValue={downloadProgress} visible={downloading} />
           </Dialog.Content>
