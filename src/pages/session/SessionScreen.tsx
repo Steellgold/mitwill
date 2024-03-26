@@ -143,57 +143,14 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
 
         <TextInput label="Email (Non modifiable)" mode="outlined" value={session?.user.email} disabled style={{ marginTop: 16 }} />
 
-        {/* bouton pour clear l'avatar */}
-        <Button
-          mode="contained"
-          icon="delete"
-          style={{ marginTop: 16 }}
-          loading={editLoading}
-          disabled={editLoading || !session || !avatar}
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
-          onPress={async() => {
-            setLoading(true);
-            const { data, error } = await supabase.storage.from("avatars").remove([`${uuid}.png`]);
-            if (error) console.error("Error removing avatar:", error);
-            if (!data) console.error("No data returned from remove avatar");
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const newAvatar = getAvatar(firstName, lastName);
-
-            const { status } = await supabase.from("users").update({ avatar: newAvatar }).eq("userId", session?.user.id || "");
-            if (status !== 204) console.error("Error updating user avatar:", status);
-
-            setAvatar(newAvatar);
-            setLoading(false);
-          }}
-        >
-          Remettre par défaut l'avatar
-        </Button>
-
-        <Button
-          mode="contained"
-          icon={"account-edit"}
-          style={{ marginTop: 16 }}
-          loading={editLoading}
-          disabled={
-            // eslint-disable-next-line max-len
-            editLoading || !session || !firstName || !lastName || firstName === session?.user.user_metadata.firstName && lastName === session?.user.user_metadata.lastName}
-          onPress={() => {
-            handleEdit()
-              .then(() => console.log("User profile updated"))
-              .catch((error) => console.error("Error (handleEdit in SessionScreen.tsx l64):", error));
-          }}
-        >
-          Mettre à jour
-        </Button>
-
         <Portal>
           <Dialog visible={dialogPasswordVisible} onDismiss={() => setDialogPasswordVisible(false)} dismissable={false}>
             <Dialog.Icon icon="lock" />
             <Dialog.Title>Changer de mot de passe</Dialog.Title>
 
             <Dialog.Content>
-              <Text>Veuillez saisir votre nouveau mot de passe</Text>
+              <Text>Veuillez saisir votre nouveau mot de passe&nbsp;
+                <Text style={{ color: "#e94e4e" }}>(Une fois validé une reconexion sera nécessaire)</Text></Text>
               {passwordError && <Text style={{ color: "red" }}>{passwordError}</Text>}
               <View style={{ marginVertical: 10 }} />
 
@@ -236,12 +193,50 @@ export const SessionScreen = ({ navigation }: Props): ReactElement => {
         </Portal>
 
         <Button
-          mode="contained"
-          icon="shield-lock"
+          mode="contained-tonal"
+          icon="format-letter-case"
           style={{ marginTop: 16 }}
-          onPress={() => setDialogPasswordVisible(true)}
+          loading={editLoading}
+          disabled={editLoading || !session || !avatar}
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          onPress={async() => {
+            setLoading(true);
+            const { data, error } = await supabase.storage.from("avatars").remove([`${uuid}.png`]);
+            if (error) console.error("Error removing avatar:", error);
+            if (!data) console.error("No data returned from remove avatar");
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            const newAvatar = getAvatar(firstName, lastName);
+
+            const { status } = await supabase.from("users").update({ avatar: newAvatar }).eq("userId", session?.user.id || "");
+            if (status !== 204) console.error("Error updating user avatar:", status);
+
+            setAvatar(newAvatar);
+            setLoading(false);
+          }}
         >
-          Changer de mot de passe
+          Remettre par défaut l'avatar
+        </Button>
+
+        <Button
+          mode="contained"
+          icon={"account-edit"}
+          style={{ marginTop: 16 }}
+          loading={editLoading}
+          disabled={
+            // eslint-disable-next-line max-len
+            editLoading || !session || !firstName || !lastName || firstName === session?.user.user_metadata.firstName && lastName === session?.user.user_metadata.lastName}
+          onPress={() => {
+            handleEdit()
+              .then(() => console.log("User profile updated"))
+              .catch((error) => console.error("Error (handleEdit in SessionScreen.tsx l64):", error));
+          }}
+        >
+          Mettre à jour
+        </Button>
+
+        <Button mode="contained-tonal" icon="shield-lock" style={{ marginTop: 16 }} onPress={() => setDialogPasswordVisible(true)}>
+          Changer mon mot de passe
         </Button>
 
         <Portal>
