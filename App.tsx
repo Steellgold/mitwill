@@ -31,7 +31,6 @@ export type RootStackParamList = {
   HomeScreen: undefined;
   CounterScreen: undefined;
 
-  // Session screens
   LoginScreen: undefined;
   RegisterScreen: undefined;
   SessionScreen: undefined;
@@ -40,20 +39,11 @@ export type RootStackParamList = {
     check: Check;
     isManager?: boolean;
   };
-  // PlanningScreen: {
-  //   date?: string;
-  //   refresh?: boolean;
-  // };
 
-  // Manage screens
   ApprovalsScreen: undefined;
   ChecksApprovalsScreen: undefined;
-  // CUPlanningScreen: {
-  //   date: string;
-  //   planningId?: string;
-  // };
 
-  // User screens (Manager)
+
   EmployeesScreen: undefined;
   EmployeeScreen: Database["public"]["Tables"]["users"]["Row"];
 };
@@ -75,12 +65,7 @@ export const App = (): ReactElement => {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 3, backgroundColor: "#fffbfe" }}>
         <ActivityIndicator size={"large"} style={{ marginBottom: 10 }} color="#fd7e47" />
-        {
-          logoutLoading
-            ? <Text>Déconnexion en cours...</Text>
-            : <Text>Chargement de l'application...</Text>
-        }
-
+        {logoutLoading ? <Text>Déconnexion en cours...</Text> : <Text>Chargement de l'application...</Text>}
         <Version />
       </View>
     );
@@ -126,7 +111,6 @@ export const App = (): ReactElement => {
           <>
             {/* @ts-ignore */}
             <AppBar {...props} />
-            {/* {props.route.name == "HomeScreen" && <PlanningBannerNotPlanned />} */}
 
             {notification_action == OPEN_APPROBATION && <ApprobationNotificationBanner />}
             {Platform.OS === "android" && props.route.name == "HomeScreen" && <ChecksNotificationBanner />}
@@ -138,20 +122,13 @@ export const App = (): ReactElement => {
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="CounterScreen" component={CounterScreen} />
 
-      {/* Session screens */}
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
       <Stack.Screen name="SessionScreen" component={SessionScreen} />
 
       <Stack.Screen name="CheckInfoScreen" component={CheckInfoScreen} />
-      {/* <Stack.Screen name="PlanningScreen" component={PlanningsScreen} /> */}
-
-      {/* Manage screens */}
       <Stack.Screen name="ApprovalsScreen" component={ApprovalsScreen} />
       <Stack.Screen name="ChecksApprovalsScreen" component={ChecksApprovalsScreen} />
-      {/* <Stack.Screen name="CUPlanningScreen" component={CUPlanningScreen} /> */}
-
-      {/* User screens (Manager) */}
       <Stack.Screen name="EmployeesScreen" component={EmployeesScreen} />
       <Stack.Screen name="EmployeeScreen" component={EmployeeScreen} />
     </Stack.Navigator>
