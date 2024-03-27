@@ -8,6 +8,7 @@ interface Notification {
   title: string;
   body: string;
   action?: string;
+  IS_DEV?: boolean;
 }
 
 interface WebhookPayload {
@@ -21,6 +22,8 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 );
+
+const FCM_DEVICE_TOKEN = "c-jNQ-HaQlO2enzEI29fVY:APA91bHtHkH0YQAZ2GRE87z1y-wt68kyLSW6du0IBO6OFJBl1SnwPWcW3bPM-puN2B_ahaNQngr5l_ArhlEeLE5OCRV8_q-G0gyc9zlRpm-pbdRrCBoJXiUMYRW394RKYKnER_IAAOBD";
 
 Deno.serve(async(req) => {
   const payload: WebhookPayload = await req.json();
@@ -48,7 +51,7 @@ Deno.serve(async(req) => {
       },
       body: JSON.stringify({
         message: {
-          token: fcmToken,
+          token: payload.record.IS_DEV ? FCM_DEVICE_TOKEN : fcmToken,
           data: {
             action: payload.record.action
           },
