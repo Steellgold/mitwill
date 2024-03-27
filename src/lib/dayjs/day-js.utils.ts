@@ -184,6 +184,7 @@ export const calculateTotalPauseTimeDetailed = (checks: Check[]): PauseDiff => {
   let nbr45Taken = 0;
 
   checks.forEach(check => {
+    if (check.pause === "NONE") return;
     if (check.pauseTaken) {
       totalPauseMinutes += 45;
       nbr45Taken += 1;
@@ -204,4 +205,12 @@ export const calculateTotalPauseTimeDetailed = (checks: Check[]): PauseDiff => {
     nbr20Taken,
     nbr45Taken
   };
+};
+
+export const isBeyond6Hours = (start: Dayjs | string, end: Dayjs | string): boolean => {
+  const startTime = dayJS(start);
+  const endTime = dayJS(end);
+  const diffDuration = dayJS.duration(endTime.diff(startTime));
+
+  return diffDuration.asHours() >= 6;
 };
