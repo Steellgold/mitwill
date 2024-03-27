@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useState, type ReactElement, useEffect } from "react";
 import { Image, View } from "react-native";
-import { Appbar, Badge, Text, Tooltip } from "react-native-paper";
+import { Appbar, Badge, Text, Tooltip, TouchableRipple } from "react-native-paper";
 import type { RootStackParamList } from "../../../App";
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../db/supabase";
@@ -51,11 +51,17 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
 
   return (
     <Appbar>
-      {navigation.canGoBack() && <Appbar.BackAction onPress={navigation.goBack} />}
-      {!navigation.canGoBack() && route.name !== "HomeScreen" && <Appbar.BackAction onPress={() => navigation.popToTop()} />}
-      {!navigation.canGoBack() && <Text>{"    "}</Text>}
-      {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-      <Image source={require("./assets/logo.jpg")} style={{ width: 100, height: 40 }} />
+      <Text>{"    "}</Text>
+
+      <TouchableRipple onPress={() => {
+        if (route.name === "HomeScreen") return;
+        navigation.push("HomeScreen");
+        navigation.popToTop();
+      }}>
+        {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+        <Image source={require("./assets/logo.jpg")} style={{ width: 100, height: 40 }} />
+      </TouchableRipple>
+
       <Appbar.Content title="" />
 
       {/* <Tooltip title="Compteur" leaveTouchDelay={200} enterTouchDelay={200}>
