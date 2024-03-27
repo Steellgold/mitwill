@@ -194,14 +194,14 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
     if (!activeCheck) return console.error("No active check");
     const { error } = await supabase
       .from("checks")
-      .update({ pauseTaken: value })
+      .update({ pauseTaken: value, pause: value ? "LONG" : "DEFAULT" })
       .eq("uuid", activeCheck.uuid)
       .eq("userId", session?.user.id || "")
       .single();
 
     if (error) console.error("Error:", error);
     setNeedDataRefresh(true);
-    setActiveCheck({ ...activeCheck, pauseTaken: value });
+    setActiveCheck({ ...activeCheck, pauseTaken: value, pause: value ? "LONG" : "DEFAULT" });
   };
 
   return (
