@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useState, type ReactElement, useEffect } from "react";
 import { Image, View } from "react-native";
-import { Appbar, Badge, Text, Tooltip, TouchableRipple } from "react-native-paper";
+import { Appbar, Badge, Menu, Text, Tooltip, TouchableRipple } from "react-native-paper";
 import type { RootStackParamList } from "../../../App";
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../db/supabase";
@@ -14,6 +14,8 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
   const [stateChecks, setStateChecks] = useState<number>(0);
 
   const [waitingUsers, setWaitingUsers] = useState<number>(0);
+
+  const [menuAppsOpen, setMenuAppsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchWaiting = async(): Promise<void> => {
@@ -74,12 +76,6 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
       {/* Todo, for now the app has only one little app-in-app */}
       {/* <Appbar.Action icon="apps" onPress={() => navigation.push("HomeScreen")} disabled={route.name === "HomeScreen"} /> */}
 
-      {/* <Tooltip title="Plannings" leaveTouchDelay={200} enterTouchDelay={200}>
-        <Appbar.Action icon="calendar-month" onPress={() => navigation.push("PlanningScreen", {
-          date: dayJS().format("YYYY-MM-DD")
-        })} disabled={route.name === "PlanningScreen"} />
-      </Tooltip> */}
-
       {role === "MANAGER" && (
         <View style={{ position: "relative" }}>
           <Tooltip title="Approbations" leaveTouchDelay={200} enterTouchDelay={200}>
@@ -92,6 +88,10 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
           {waitingUsers > 0 && <Badge style={{ position: "absolute", top: 0, right: 0 }} visible={true}>{state}</Badge>}
         </View>
       )}
+
+      {role === "MANAGER" && <Appbar.Action icon="calendar-search" disabled={role !== "MANAGER"} onPress={() => {
+        navigation.push("ApprovalsScreen");
+      }} />}
 
       {role === "MANAGER" && isMeti && (
         <View style={{ position: "relative" }}>
@@ -113,6 +113,32 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
           disabled={role !== "MANAGER"}
         />
       )}
+
+      <Menu
+        visible={menuAppsOpen}
+        onDismiss={() => setMenuAppsOpen(false)}
+        anchor={<Appbar.Action icon="apps" onPress={() => setMenuAppsOpen(true)} />}>
+        <Menu.Item
+          onPress={() => {
+            void navigation.push("CounterScreen");
+            setMenuAppsOpen(false);
+          }}
+          title="Compteur de clics"
+          leadingIcon={"numeric"}
+          disabled={route.name === "CounterScreen"}
+        />
+
+        <Menu.Item
+          onPress={() => {
+            console.log("Tkt");
+            // void navigation.push("ImageCompressorScreen");
+            setMenuAppsOpen(false);
+          }}
+          title="Compresseur d'images"
+          leadingIcon={"image-auto-adjust"}
+          disabled={route.name === "ImageCompressorScreen"}
+        />
+      </Menu>
 
       <Tooltip title="Compte" leaveTouchDelay={200} enterTouchDelay={200}>
         <Appbar.Action icon={session ? "account" : "account-key"} disabled={
