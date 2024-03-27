@@ -1,6 +1,6 @@
 import { useEffect, type ReactElement, useState } from "react";
 import { Avatar, Button, Card, Text } from "react-native-paper";
-import { calculateDiff, calculateNightHours, calculateTimeBeyond, majdate } from "../../dayjs/day-js.utils";
+import { calculateDiff, calculateNightHours, calculateTimeBeyond, isBeyond6Hours, majdate } from "../../dayjs/day-js.utils";
 import { dayJS } from "../../dayjs/day-js";
 import { useSession } from "../../hooks/useSession";
 import { NoCheckCard } from "./NoCheckCard";
@@ -24,6 +24,7 @@ export const CheckCard = (): ReactElement => {
 
   const nightTime = calculateNightHours(dayJS(activeCheck.start), dayJS());
   const beyondTime = calculateTimeBeyond(dayJS(activeCheck.start), dayJS(), activeCheck.pauseTaken);
+  const eligibleTo20mPause = isBeyond6Hours(dayJS(activeCheck.start), dayJS());
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -85,6 +86,15 @@ export const CheckCard = (): ReactElement => {
                 <Text style={{ fontWeight: "bold", color: "#6750a4" }}>{beyondTime.minutes} minutes</Text>
               </Text>
             )}
+          </View>
+        )}
+
+        {eligibleTo20mPause && (
+          <View style={{ marginTop: 10, flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Avatar.Icon icon="coffee" size={16} />
+            <Text style={{ fontSize: 12 }}>
+              Une pause de 20 minutes est obligatoire après 6 heures de travail consécutives !
+            </Text>
           </View>
         )}
       </Card.Content>
