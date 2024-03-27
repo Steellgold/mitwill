@@ -1,11 +1,14 @@
 import { useState, type ReactElement, useEffect } from "react";
 import { View, Vibration } from "react-native";
-import { Avatar, Text, TouchableRipple } from "react-native-paper";
+import { Avatar, Button, Dialog, Portal, Text, TextInput, TouchableRipple } from "react-native-paper";
 
 export const CounterScreen = (): ReactElement => {
   const [counter, setCounter] = useState(0);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [delay, setDelay] = useState(50);
+
+  const [isDialogVisible, setIsDialogVisible] = useState(false);
+  const [dialogValue, setDialogValue] = useState<string>("0");
 
   const clearIncrementInterval = (): void => {
     if (intervalId) {
@@ -47,6 +50,35 @@ export const CounterScreen = (): ReactElement => {
 
   return (
     <View style={{ flexDirection: "row", height: "100%", width: "100%", alignItems: "center", justifyContent: "center" }}>
+      <Portal>
+        <Dialog visible={isDialogVisible} onDismiss={() => setIsDialogVisible(false)}>
+          <Dialog.Icon icon="numeric" />
+          <Dialog.Title>Modifier le compteur</Dialog.Title>
+
+          <Dialog.Content>
+            <TextInput
+              keyboardType="numeric"
+              label="Modifier le compteur"
+              value={dialogValue.toString()}
+              onChangeText={(text) => setDialogValue(text)}
+            />
+          </Dialog.Content>
+
+          <Dialog.Actions>
+            <Button onPress={() => {
+              setCounter(parseInt(dialogValue, 10));
+              setIsDialogVisible(false);
+            }}>Annuler</Button>
+
+            <Button onPress={() => {
+              setCounter(parseInt(dialogValue, 10));
+              setDialogValue("0");
+              setIsDialogVisible(false);
+            }}>Valider</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+
       <TouchableRipple
         onPress={() => {
           if (counter > 0) {
@@ -65,7 +97,12 @@ export const CounterScreen = (): ReactElement => {
       </TouchableRipple>
 
       <View style={{ position: "absolute", justifyContent: "center", alignItems: "center", zIndex: 100 }}>
-        <TouchableRipple onPress={() => setCounter(0)} style={{ borderRadius: 9999 }} borderless>
+        <TouchableRipple
+          style={{ borderRadius: 9999 }}
+          onPress={() => setIsDialogVisible(true)}
+          onLongPress={() => setCounter(0)}
+          borderless
+        >
           <Avatar.Text
             size={100}
             labelStyle={{ fontSize: 30, color: "white" }}
