@@ -6,6 +6,7 @@ import { supabase } from "../db/supabase";
 import type { Database } from "../db/supabase.types";
 import { dayJS } from "../dayjs/day-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { isBeyond6Hours } from "../dayjs/day-js.utils";
 
 export type Check = Database["public"]["Tables"]["checks"]["Row"];
 
@@ -165,6 +166,8 @@ export const SessionProvider = ({ children }: PropsWithChildren): ReactElement =
       .update({
         end: end !== "" ? end : dayJS().format("YYYY-MM-DD HH:mm:ss"),
         start: start !== "" ? start : activeCheck?.start,
+        pause: activeCheck?.pause == "NONE"
+          ? isBeyond6Hours(activeCheck?.start, dayJS().format("YYYY-MM-DD HH:mm:ss")) ? "DEFAULT" : "NONE" : activeCheck?.pause,
         need_validation: needValidation
       })
       .eq("uuid", activeCheck?.uuid || "")
