@@ -72,22 +72,20 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
 
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <MiniCard title="Heures travaillées" subtitle={`${duration.hours} heures et ${duration.minutes} mins`} />
-                <MiniCard title="Pause" subtitle={ check.pauseTaken ? "45 mins" : "20 mins (oblg.)"} />
+                {check.pause !== "NONE" ? (
+                  <MiniCard title="Pause" subtitle={ check.pauseTaken ? "45 mins" : "20 mins (oblg.)"} />
+                ) : (
+                  <MiniCard title="Pause" subtitle="Aucune**" />
+                )}
               </View>
 
               <View style={{ marginVertical: 5 }} />
 
               <View style={{ flexDirection: "row", gap: 10 }}>
                 {(parseInt(duration.nbrNights.hours) > 0) || (parseInt(duration.nbrNights.minutes) > 0) ? (
-                  <MiniCard
-                    title="Heures de nuit"
-                    subtitle={`${duration.nbrNights.hours} heures et ${duration.nbrNights.minutes} mins`}
-                  />
+                  <MiniCard title="Heures en nuit" subtitle={`${duration.nbrNights.hours} heures et ${duration.nbrNights.minutes} mins`} />
                 ) : (
-                  <MiniCard
-                    title="Heures de nuit"
-                    subtitle="Aucune"
-                  />
+                  <MiniCard title="Heures en nuit" subtitle="Aucune" />
                 )}
 
                 {(parseInt(duration.nbrSupps.hours) > 0) || (parseInt(duration.nbrSupps.minutes) > 0)
@@ -129,7 +127,16 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
 
           <Text style={styles.bold}>Note:</Text>
           <Text>- Les heures de nuit sont calculées entre 21h30 et 6h00.</Text>
-          <Text>- Les heures supplémentaires sont calculées au-delà de 7h{check.pauseTaken ? "45" : "20"} de travail.</Text>
+          {check.pause !== "NONE"
+            && <Text>- Les heures supplémentaires sont calculées au-delà de 7h{check.pauseTaken ? "45" : "20"} de travail.</Text>}
+
+          {check.pause === "NONE" && (
+            <>
+              <View style={{ marginVertical: 10 }}/>
+
+              <Text style={styles.red}>** Les pauses par défaut (20 mins) dans des journées inférieures à 6h ne sont pas prises en compte.</Text>
+            </>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
