@@ -215,6 +215,14 @@ export const isBeyond6Hours = (start: Dayjs | string, end: Dayjs | string): bool
   return diffDuration.asHours() >= 6;
 };
 
+export const isBeyond45minutes = (start: Dayjs | string, end: Dayjs | string): boolean => {
+  const startTime = dayJS(start);
+  const endTime = dayJS(end);
+  const diffDuration = dayJS.duration(endTime.diff(startTime));
+
+  return diffDuration.asMinutes() >= 45;
+};
+
 export const calculateOvertimeHours = (start: Dayjs): TimeBeyond => {
   return calculateTimeBeyond(start, dayJS().format(), false);
 };

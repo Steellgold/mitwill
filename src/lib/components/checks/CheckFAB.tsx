@@ -1,15 +1,16 @@
 /* eslint-disable camelcase */
 /* eslint-disable max-len */
-import { Button, Dialog, FAB, Portal, Text } from "react-native-paper";
+import { Avatar, Button, Card, Dialog, FAB, Portal, Text } from "react-native-paper";
 import { useSession } from "../../hooks/useSession";
 import { useState, type ReactElement } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { dayJS } from "../../dayjs/day-js";
 import { ConfirmCheckDialog } from "../../../pages/session/company/manager/dialogs/check/ConfirmCheck";
 import { supabase } from "../../db/supabase";
 import { OPEN_CHECKS } from "../../../../codes";
 import { fullName } from "../../some";
 import type { FABGroupActions } from "../../types/fab";
+import { isBeyond45minutes } from "../../dayjs/day-js.utils";
 
 type Props = {
   visible: boolean;
@@ -35,17 +36,31 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
           <Dialog.Title style={styles.title}>Prise de pause</Dialog.Title>
           <Dialog.Content>
             <Text style={{ marginBottom: 10 }}>Avez vous pris une pause à plus de 20 minutes aujourd'hui ?</Text>
-            <Text variant="bodySmall" style={{ marginTop: 10 }}>
-              <Text variant="bodySmall" style={{ fontWeight: "bold" }}>/!\ &nbsp;</Text>Si vous cliquez sur "Oui", l'action est irréversible.
-            </Text>
+
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Avatar.Icon size={24} icon="information" />
+              <Text variant="bodySmall" style={{ flexDirection: "row", alignItems: "center" }}>
+              Si vous cliquez sur "Oui", l'action est irréversible.
+              </Text>
+            </View>
+
+            {!isBeyond45minutes(activeCheck.start, dayJS()) && (
+              <Card style={{ backgroundColor: "#e94e4e", marginTop: 10 }}>
+                <Card.Content style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <Text style={{ color: "#fff" }}>Vous ne pouvez pas prendre de pause de 45 minutes avant 45 minutes de travail 😅</Text>
+                </Card.Content>
+              </Card>
+            )}
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setDialogPauseVisible(false)}>Annuler</Button>
-            {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
-            <Button onPress={async() => {
-              await setPauseTaken(true);
-              setDialogPauseVisible(false);
-            }}>Oui</Button>
+            <Button
+              disabled={!isBeyond45minutes(activeCheck.start, dayJS())}
+              // eslint-disable-next-line @typescript-eslint/no-misused-promises
+              onPress={async() => {
+                await setPauseTaken(true);
+                setDialogPauseVisible(false);
+              }}>Oui</Button>
           </Dialog.Actions>
         </Dialog>
 
@@ -96,7 +111,7 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
           onStateChange={({ open }) => setFabGroupOpen(open)}
           icon={"clock-edit-outline"}
           label="Gérer ma journée"
-          visible={visible}
+          visible={!dialogPauseVisible}
           style={styles.fabGroup}
           actions={[
             {
