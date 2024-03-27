@@ -14,6 +14,7 @@ export type Database = {
           date: string;
           end: string | null;
           need_validation: boolean;
+          pause: Database["public"]["Enums"]["PauseType"] | null;
           pauseTaken: boolean;
           start: string;
           userId: string;
@@ -23,6 +24,7 @@ export type Database = {
           date: string;
           end?: string | null;
           need_validation?: boolean;
+          pause?: Database["public"]["Enums"]["PauseType"] | null;
           pauseTaken?: boolean;
           start?: string;
           userId: string;
@@ -32,6 +34,7 @@ export type Database = {
           date?: string;
           end?: string | null;
           need_validation?: boolean;
+          pause?: Database["public"]["Enums"]["PauseType"] | null;
           pauseTaken?: boolean;
           start?: string;
           userId?: string;
@@ -268,6 +271,7 @@ export type Database = {
     };
     Enums: {
       HoursType: "FOR_ALL" | "CUSTOM";
+      PauseType: "NONE" | "DEFAULT" | "LONG";
       Role: "EMPLOYEE" | "MANAGER";
       Status: "APPROVED" | "DECLINED" | "WAITING";
       WeekType: "NIGHT" | "NORMAL";
