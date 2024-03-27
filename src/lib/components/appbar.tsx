@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useState, type ReactElement, useEffect } from "react";
 import { Image, View } from "react-native";
-import { Appbar, Badge, Menu, Text, Tooltip, TouchableRipple } from "react-native-paper";
+import { Appbar, Badge, Text, Tooltip, TouchableRipple } from "react-native-paper";
 import type { RootStackParamList } from "../../../App";
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../db/supabase";
@@ -15,7 +15,7 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
 
   const [waitingUsers, setWaitingUsers] = useState<number>(0);
 
-  const [menuAppsOpen, setMenuAppsOpen] = useState<boolean>(false);
+  // const [menuAppsOpen, setMenuAppsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchWaiting = async(): Promise<void> => {
@@ -89,9 +89,9 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
         </View>
       )}
 
-      {role === "MANAGER" && <Appbar.Action icon="calendar-search" disabled={role !== "MANAGER"} onPress={() => {
+      {/* {role === "MANAGER" && <Appbar.Action icon="calendar-search" disabled={role !== "MANAGER"} onPress={() => {
         navigation.push("ApprovalsScreen");
-      }} />}
+      }} />} */}
 
       {role === "MANAGER" && isMeti && (
         <View style={{ position: "relative" }}>
@@ -114,7 +114,7 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
         />
       )}
 
-      <Menu
+      {/* <Menu
         visible={menuAppsOpen}
         onDismiss={() => setMenuAppsOpen(false)}
         anchor={<Appbar.Action icon="apps" onPress={() => setMenuAppsOpen(true)} />}>
@@ -138,7 +138,7 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
           leadingIcon={"image-auto-adjust"}
           disabled={route.name === "ImageCompressorScreen"}
         />
-      </Menu>
+      </Menu> */}
 
       <Tooltip title="Compte" leaveTouchDelay={200} enterTouchDelay={200}>
         <Appbar.Action icon={session ? "account" : "account-key"} disabled={
