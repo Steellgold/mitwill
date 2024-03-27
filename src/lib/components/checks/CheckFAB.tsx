@@ -58,19 +58,11 @@ export const CheckFAB = ({ visible }: Props): ReactElement => {
             const Vstart = dayJS().format("YYYY-MM-DD") + "T" + start;
             const Vend = dayJS().format("YYYY-MM-DD") + "T" + end;
 
-            const needValidationFinal = needValidation
-              || dayJS(Vend).diff(dayJS(Vstart), "minute") > 465
-              || dayJS(Vend).diff(dayJS(Vstart), "minute") > 440;
-
-            endCheck(
-              needValidationFinal,
-              needValidationFinal ? Vstart : "",
-              needValidationFinal ? Vend : ""
-            )
+            endCheck(needValidation, needValidation ? Vstart : "", needValidation ? Vend : "")
               .then(() => console.log("Check ended"))
               .catch((error) => console.error("Error:", error));
 
-            if (needValidationFinal) {
+            if (needValidation) {
               await supabase
                 .functions
                 .invoke("get_approbator")
