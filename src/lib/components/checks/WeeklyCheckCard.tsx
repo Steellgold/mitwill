@@ -135,9 +135,7 @@ export const WeeklyCheckCard = ({ specificUserId }: { specificUserId?: string })
                     resizeMode="contain"
                   />
 
-                  <Text style={{ textAlign: "center" }}>
-                  Wow, tu es en avance sur ton temps ! 🤯
-                  </Text>
+                  <Text style={{ textAlign: "center" }}>Wow, tu es en avance sur ton temps ! 🤯</Text>
                 </View>
               ) : (
                 <DataTable.Row>
@@ -175,7 +173,9 @@ export const WeeklyCheckCard = ({ specificUserId }: { specificUserId?: string })
                 {check.end
                   ? <DataTable.Cell numeric>{dayJS(check.end).format("HH[h ]mm[m]")}</DataTable.Cell>
                   : <DataTable.Cell numeric>
-                    <Chip>En cours</Chip>
+                    <Chip icon="clock-time-four-outline">
+                      En cours
+                    </Chip>
                   </DataTable.Cell>
                 }
               </DataTable.Row>
