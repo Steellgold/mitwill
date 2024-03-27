@@ -93,7 +93,7 @@ export const calculateDiff = (start: Dayjs | string, end: Dayjs | string): Simpl
   };
 };
 
-const calculateNightHours = (start: Dayjs, end: Dayjs): { hours: string; minutes: string } => {
+export const calculateNightHours = (start: Dayjs, end: Dayjs): { hours: string; minutes: string } => {
   let nightStart = start.clone().set({ hour: 21, minute: 30, second: 0 });
   let nightEnd = start.clone().set({ hour: 6, minute: 0, second: 0 }).add(1, "day");
 
@@ -213,4 +213,8 @@ export const isBeyond6Hours = (start: Dayjs | string, end: Dayjs | string): bool
   const diffDuration = dayJS.duration(endTime.diff(startTime));
 
   return diffDuration.asHours() >= 6;
+};
+
+export const calculateOvertimeHours = (start: Dayjs): TimeBeyond => {
+  return calculateTimeBeyond(start, dayJS().format(), false);
 };
