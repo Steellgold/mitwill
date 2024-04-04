@@ -89,9 +89,12 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
         </View>
       )}
 
-      {/* {role === "MANAGER" && <Appbar.Action icon="calendar-search" disabled={role !== "MANAGER"} onPress={() => {
-        navigation.push("ApprovalsScreen");
-      }} />} */}
+      {role === "MANAGER" && <Appbar.Action icon="calendar-search" disabled={role !== "MANAGER"} onPress={() => {
+        navigation.push("PeriodChecksScreen", {
+          start: "2024-01-27",
+          end: "2024-01-27"
+        });
+      }} />}
 
       {role === "MANAGER" && isMeti && (
         <View style={{ position: "relative" }}>

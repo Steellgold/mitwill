@@ -51,7 +51,7 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
         <View style={{ padding: 15 }}>
           <Card>
             <MiniCard
-              title="Pointage du jour"
+              title={`Pointage du ${dayJS(check.start).format("dddd DD MMMM YYYY")}`.replace(/(^\w{1})/g, letter => letter.toUpperCase())}
               subtitle={route.params.isManager
                 ? "Données détaillées par rapport au pointage et au temps de travail de l'employé."
                 : "Données détaillées par rapport à votre pointage et votre temps de travail."}
@@ -71,17 +71,6 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
               <View style={{ marginVertical: 5 }} />
 
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <MiniCard title="Heures travaillées" subtitle={`${duration.hours} heures et ${duration.minutes} mins`} />
-                {check.pause !== "NONE" ? (
-                  <MiniCard title="Pause" subtitle={ check.pauseTaken ? "45 mins" : "20 mins (oblg.)"} />
-                ) : (
-                  <MiniCard title="Pause" subtitle="Aucune**" />
-                )}
-              </View>
-
-              <View style={{ marginVertical: 5 }} />
-
-              <View style={{ flexDirection: "row", gap: 10 }}>
                 {(parseInt(duration.nbrNights.hours) > 0) || (parseInt(duration.nbrNights.minutes) > 0) ? (
                   <MiniCard title="Heures en nuit" subtitle={`${duration.nbrNights.hours} heures et ${duration.nbrNights.minutes} mins`} />
                 ) : (
@@ -93,7 +82,14 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
                   : <MiniCard title="Heures supps." subtitle="Aucune" />}
               </View>
 
-              <Divider style={{ marginVertical: 15 }} />
+              <View style={{ paddingVertical: 10, flexDirection: "column", gap: 5 }}>
+                <View style={{ flexDirection: "row", gap: 3, alignItems: "center", flex: 1 }}>
+                  <Avatar.Icon color="#785E2F" size={24} icon="coffee" style={{ backgroundColor: "transparent" }}/>
+                  <Text style={styles.orange}>Une pause de {check.pauseTaken ? "45" : "20"} mins a été prise.</Text>
+                </View>
+              </View>
+
+              <Divider style={{ marginBottom: 15 }} />
 
               <MiniCard
                 title="Temps de travail (sans la pause)"
@@ -102,20 +98,7 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
               />
             </Card.Content>
 
-            {route.params.isManager ? (
-              <View style={{ marginVertical: 10 }} />
-            ) : (
-              <>
-                <Divider style={{ marginTop: 15, marginBottom: 5 }}/>
-
-                <View style={{ padding: 10, flexDirection: "column", gap: 5 }}>
-                  <View style={{ flexDirection: "row", gap: 3, alignItems: "center", flex: 1 }}>
-                    <Avatar.Icon color="#fd7e46" size={24} icon="information" style={{ backgroundColor: "transparent" }}/>
-                    <Text style={styles.orange}>Ces informations sont visibles par votre employeur.</Text>
-                  </View>
-                </View>
-              </>
-            )}
+            <View style={{ marginVertical: 10 }} />
           </Card>
 
           <View style={{ marginVertical: 10 }} />
@@ -148,7 +131,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   orange: {
-    color: "#fd7e46"
+    color: "#785E2F"
   },
   red: {
     color: "#fd4646"
