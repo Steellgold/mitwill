@@ -24,6 +24,7 @@ import { ChecksNotificationBanner } from "./src/lib/components/banners/ChecksBan
 import type { Database } from "./src/lib/db/supabase.types";
 import { UpdateBanner } from "./src/lib/components/banners/UpdateBanner";
 import { Version } from "./src/lib/version";
+import { PeriodChecksScreen } from "./src/pages/session/company/manager/user/PeriodChecksScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -46,6 +47,10 @@ export type RootStackParamList = {
 
   EmployeesScreen: undefined;
   EmployeeScreen: Database["public"]["Tables"]["users"]["Row"];
+  PeriodChecksScreen: {
+    start: string;
+    end: string;
+  };
 };
 
 export const App = (): ReactElement => {
@@ -131,6 +136,7 @@ export const App = (): ReactElement => {
       <Stack.Screen name="ChecksApprovalsScreen" component={ChecksApprovalsScreen} />
       <Stack.Screen name="EmployeesScreen" component={EmployeesScreen} />
       <Stack.Screen name="EmployeeScreen" component={EmployeeScreen} />
+      <Stack.Screen name="PeriodChecksScreen" component={PeriodChecksScreen} />
     </Stack.Navigator>
   );
 };
