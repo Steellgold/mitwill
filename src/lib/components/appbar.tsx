@@ -5,6 +5,8 @@ import { Appbar, Badge, Text, Tooltip, TouchableRipple } from "react-native-pape
 import type { RootStackParamList } from "../../../App";
 import { useSession } from "../hooks/useSession";
 import { supabase } from "../db/supabase";
+import { DatePickerModal } from "react-native-paper-dates";
+import { dayJS } from "../dayjs/day-js";
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -16,6 +18,7 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
   const [waitingUsers, setWaitingUsers] = useState<number>(0);
 
   // const [menuAppsOpen, setMenuAppsOpen] = useState<boolean>(false);
+  const [modalSelectorOpen, setModalSelectorOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchWaiting = async(): Promise<void> => {
@@ -89,12 +92,23 @@ export const AppBar = ({ navigation, route }: Props): ReactElement => {
         </View>
       )}
 
-      {role === "MANAGER" && <Appbar.Action icon="calendar-search" disabled={role !== "MANAGER"} onPress={() => {
-        navigation.push("PeriodChecksScreen", {
-          start: "2024-01-27",
-          end: "2024-01-27"
-        });
-      }} />}
+      <Appbar.Action icon="calendar-search" onPress={() => setModalSelectorOpen(true)} />
+
+      <DatePickerModal
+        locale="fr"
+        mode="range"
+        visible={modalSelectorOpen}
+        onDismiss={() => setModalSelectorOpen(false)}
+        startDate={dayJS("2024-02-05").toDate()}
+        endDate={dayJS("2024-02-24").toDate()}
+        onConfirm={({ startDate, endDate }) => {
+          setModalSelectorOpen(false);
+          navigation.push("PeriodChecksScreen", {
+            start: dayJS(startDate).format("YYYY-MM-DD"),
+            end: dayJS(endDate).format("YYYY-MM-DD")
+          });
+        }}
+      />
 
       {role === "MANAGER" && isMeti && (
         <View style={{ position: "relative" }}>
