@@ -15,7 +15,13 @@ import { type DiffWithWT } from "../../dayjs/day-js.types";
 import { calculateMultiple, calculateTotalPauseTimeDetailed } from "../../dayjs/day-js.utils";
 import { MiniCard } from "../../../pages/check/CheckInfoScreen";
 
-export const WeeklyCheckCard = ({ specificUserId }: { specificUserId?: string }): ReactElement => {
+type WeeklyCheckCardProps = {
+  specificUserId?: string;
+  startDate?: string;
+  endDate?: string;
+};
+
+export const WeeklyCheckCard = ({ specificUserId, endDate, startDate }: WeeklyCheckCardProps): ReactElement => {
   const { session, needDataRefresh } = useSession();
   if (!session) return <NoCheckCard type="weekly" />;
   const { navigate } = useNavigation();
@@ -45,7 +51,7 @@ export const WeeklyCheckCard = ({ specificUserId }: { specificUserId?: string })
 
   const [r, setR] = useState<number>(0);
 
-  const fetchChecks = async(weekToFetch: string): Promise<void> => {
+  const fetchChecks = async(weekToFetch: string, endDate?: string): Promise<void> => {
     setLoading(true);
 
     const { data, error } = await supabase
@@ -53,7 +59,9 @@ export const WeeklyCheckCard = ({ specificUserId }: { specificUserId?: string })
       .select("*")
       .eq("userId", specificUserId || session.user.id)
       .gte("date", dayJS(weekToFetch).startOf("week").format("YYYY-MM-DD"))
-      .lte("date", dayJS(weekToFetch).endOf("week").format("YYYY-MM-DD"))
+      .lte("date", dayJS(
+        endDate || dayJS(weekToFetch).endOf("week").format("YYYY-MM-DD")
+      ).endOf("week").format("YYYY-MM-DD"))
       .order("date", { ascending: false });
 
     if (error) {
@@ -67,7 +75,10 @@ export const WeeklyCheckCard = ({ specificUserId }: { specificUserId?: string })
   };
 
   useEffect(() => {
-    fetchChecks(week)
+    fetchChecks(
+      (startDate || dayJS(week).startOf("week").format("YYYY-MM-DD")),
+      endDate
+    )
       .then(() => console.log(`Checks fetched for the week of ${week}`))
       .catch((error) => console.error("Error:", error));
   }, [week, needDataRefresh, r]);
@@ -77,8 +88,12 @@ export const WeeklyCheckCard = ({ specificUserId }: { specificUserId?: string })
       .from("checks")
       .select("*")
       .eq("userId", specificUserId || session.user.id)
-      .gte("date", dayJS(week).startOf("week").format("YYYY-MM-DD"))
-      .lte("date", dayJS(week).endOf("week").format("YYYY-MM-DD"))
+      .gte("date", dayJS(
+        (startDate || dayJS(week).startOf("week").format("YYYY-MM-DD"))
+      ).startOf("week").format("YYYY-MM-DD"))
+      .lte("date", dayJS(
+        (endDate || dayJS(week).endOf("week").format("YYYY-MM-DD"))
+      ).endOf("week").format("YYYY-MM-DD"))
       .order("date", { ascending: true });
 
     if (error) setChecks([]);
@@ -102,7 +117,16 @@ export const WeeklyCheckCard = ({ specificUserId }: { specificUserId?: string })
     <>
       <Card>
         <Card.Title
-          title={`Semaine du ${dayJS(week).startOf("week").format("DD MMMM")} au ${dayJS(week).endOf("week").add(-2, "d").format("DD MMMM")}`}
+        // add a 's' to "Semaine" if startDate or endDate is defined and total is more than 1 week
+          title={`Semaine${
+            (startDate || endDate) && dayJS(endDate || dayJS(week).endOf("week").format("YYYY-MM-DD")).diff(
+              dayJS(startDate || dayJS(week).startOf("week").format("YYYY-MM-DD")), "week"
+            ) > 0 ? "s" : ""
+          } du ${dayJS(
+            (startDate || dayJS(week).startOf("week").format("YYYY-MM-DD"))
+          ).startOf("week").format("DD MMMM")} au ${dayJS(
+            (endDate || dayJS(week).endOf("week").format("YYYY-MM-DD"))
+          ).endOf("week").add(-2, "d").format("DD MMMM")}`}
           subtitle={
             dayJS(week).isSame(dayJS(), "week")
               ? "Liste des pointages de la semaine actuelle"
@@ -196,44 +220,55 @@ export const WeeklyCheckCard = ({ specificUserId }: { specificUserId?: string })
             </View>
 
             <Text variant="bodySmall" style={{ margin: 15, marginTop: 0, color: "rgba(0, 0, 0, 0.54)" }}>
-              * Temps de pause total pris sur la semaine, incluant les pauses de 20 minutes obligatoires
+              * Temps de pause total pris sur {
+                (startDate || endDate) && dayJS(endDate || dayJS(week).endOf("week").format("YYYY-MM-DD")).diff(
+                  dayJS(startDate || dayJS(week).startOf("week").format("YYYY-MM-DD")), "week"
+                ) > 0 ? "les" : "la"
+              }{" "}
+              semaine, incluant les pauses de 20 minutes obligatoires
             </Text>
+
+
+            <Text variant="bodySmall" style={{ margin: 15, marginTop: 0, color: "rgba(0, 0, 0, 0.54)" }}>
+              Note temporaire: La case "Temps de travail" ne prend pas en compte les pauses.</Text>
           </>
         )}
 
-        <Card.Actions style={{ flexDirection: "row" }}>
-          <View style={{ flex: 1, flexDirection: "row", justifyContent: "flex-start" }}>
-            <Button
-              mode="text"
-              onPress={() => setR(r + 1)}
-              labelStyle={{ color: "#1e1e1e" }}
-              disabled={loading}
-              icon={() => <Icon size={16} source={"refresh"} />}
-              style={{ alignSelf: "flex-start" }}
-            >
-            Rafraîchir
-            </Button>
-          </View>
+        {!startDate && !endDate && (
+          <Card.Actions style={{ flexDirection: "row" }}>
+            <View style={{ flex: 1, flexDirection: "row", justifyContent: "flex-start" }}>
+              <Button
+                mode="text"
+                onPress={() => setR(r + 1)}
+                labelStyle={{ color: "#1e1e1e" }}
+                disabled={loading}
+                icon={() => <Icon size={16} source={"refresh"} />}
+                style={{ alignSelf: "flex-start" }}
+              >
+                Rafraîchir
+              </Button>
+            </View>
 
-          <View style={{ flexDirection: "row", alignSelf: "flex-end" }}>
-            <IconButton
-              mode="contained-tonal"
-              onPress={() => void handleSwitchWeek("previous")}
-              icon={() => <Icon size={16} source={"arrow-left"} />}
-            />
-            <IconButton
-              mode="contained-tonal"
-              disabled={dayJS(week).isSame(dayJS(), "week")}
-              onPress={() => void handleSwitchWeek("reset")}
-              icon={() => <Icon size={16} source={"calendar-today"} />}
-            />
-            <IconButton
-              mode="contained-tonal"
-              onPress={() => void handleSwitchWeek("next")}
-              icon={() => <Icon size={16} source={"arrow-right"} />}
-            />
-          </View>
-        </Card.Actions>
+            <View style={{ flexDirection: "row", alignSelf: "flex-end" }}>
+              <IconButton
+                mode="contained-tonal"
+                onPress={() => void handleSwitchWeek("previous")}
+                icon={() => <Icon size={16} source={"arrow-left"} />}
+              />
+              <IconButton
+                mode="contained-tonal"
+                disabled={dayJS(week).isSame(dayJS(), "week")}
+                onPress={() => void handleSwitchWeek("reset")}
+                icon={() => <Icon size={16} source={"calendar-today"} />}
+              />
+              <IconButton
+                mode="contained-tonal"
+                onPress={() => void handleSwitchWeek("next")}
+                icon={() => <Icon size={16} source={"arrow-right"} />}
+              />
+            </View>
+          </Card.Actions>
+        )}
       </Card>
     </>
   );
