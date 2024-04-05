@@ -51,7 +51,11 @@ export const CheckInfoScreen = ({ route }: Props): ReactElement => {
         <View style={{ padding: 15 }}>
           <Card>
             <MiniCard
-              title={`Pointage du ${dayJS(check.start).format("dddd DD MMMM YYYY")}`.replace(/(^\w{1})/g, letter => letter.toUpperCase())}
+              title={
+                dayJS(check.start).isSame(dayJS(check.end), "day")
+                  ? `Pointage du ${dayJS(check.start).format("dddd DD MMMM YYYY")}`
+                  : `Pointage du ${dayJS(check.start).format("ddd DD/MM")} au ${dayJS(check.end).format("ddd DD/MM")} ${dayJS(check.end).format("YYYY")}`
+              }
               subtitle={route.params.isManager
                 ? "Données détaillées par rapport au pointage et au temps de travail de l'employé."
                 : "Données détaillées par rapport à votre pointage et votre temps de travail."}
